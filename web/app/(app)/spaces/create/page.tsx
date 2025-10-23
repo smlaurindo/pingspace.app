@@ -30,6 +30,7 @@ const createSpaceSchema = z.object({
     .max(50, "Name must be at most 50 characters"),
   shortDescription: z
     .string()
+    .min(3, "Short description must be at least 3 characters")
     .max(40, "Short description must be at most 40 characters")
     .transform((val) => val.trim()),
   description: z
@@ -90,6 +91,11 @@ export default function AddSpacePage() {
           });
         } else if (code === "VALIDATION_ERROR") {
           toast.error("Please check the form for errors");
+          error.response?.data?.errors.forEach(({ field, message }: any) => {
+            form.setError(field, {
+              message,
+            });
+          });
         } else {
           toast.error("Failed to create space. Please try again.");
         }

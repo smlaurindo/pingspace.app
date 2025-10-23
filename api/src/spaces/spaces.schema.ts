@@ -17,6 +17,8 @@ export const spaces = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    shortDescription: text("short_description").notNull(),
     description: text("description"),
     ownerId: text("owner_id").references(() => users.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -32,6 +34,7 @@ export const spaces = pgTable(
       .onDelete("set null")
       .onUpdate("no action"),
     index("spaces_idx_fk_user").on(table.ownerId),
+    index("spaces_idx_slug").on(table.slug),
   ],
 );
 
