@@ -1,5 +1,4 @@
 import { DesktopNavigation } from "@/components/desktop-navigation";
-import { MobileNavigation } from "@/components/mobile-navigation";
 
 export default function AppLayout({
   children,
@@ -9,6 +8,5 @@ export default function AppLayout({
   return <>
     <DesktopNavigation />
     {children}
-    <MobileNavigation />
   </>
 }

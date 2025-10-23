@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { type PointerEvent } from "react";
 import { formatDate, parseISO } from "date-fns";
 
-export default function OverviewPage() {
+export default function SpacesPage() {
   const router = useRouter();
 
   function handleOpenSpaceMenuOptions(e: PointerEvent<HTMLDivElement>, spaceId: string) {
@@ -27,7 +27,7 @@ export default function OverviewPage() {
 
   return (
     <div className="flex flex-col min-h-dvh">
-      <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-4 backdrop-blur-xs bg-background/90 border-b border-border">
+      <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 backdrop-blur-xs bg-background/90 border-b border-border">
         <h1 className="text-2xl font-bold">Spaces</h1>
 
         <div className="flex items-center gap-2">
@@ -38,7 +38,7 @@ export default function OverviewPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="pb-2">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push(`/spaces/create`)}>
                 <div
                   className="flex size-9 items-center justify-center rounded-lg border border-border bg-background"
                   aria-hidden="true"
@@ -50,7 +50,7 @@ export default function OverviewPage() {
                   <span className="text-xs text-muted-foreground">Create a new space</span>
                 </div>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push(`/spaces/join`)}>
                 <div
                   className="flex size-9 items-center justify-center rounded-lg border border-border bg-background"
                   aria-hidden="true"
