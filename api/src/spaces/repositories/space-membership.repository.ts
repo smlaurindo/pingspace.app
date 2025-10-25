@@ -1,6 +1,7 @@
-import type { SpaceMembershipInfo } from "@/spaces/spaces.types";
-
-export type SpaceMemberRole = "OWNER" | "ADMIN" | "MEMBER";
+import type {
+  CreateMembershipData,
+  SpaceMembershipInfo,
+} from "@/spaces/spaces.types";
 
 export abstract class SpaceMembershipRepository {
   /**
@@ -13,4 +14,10 @@ export abstract class SpaceMembershipRepository {
     spaceId: string,
     userId: string,
   ): Promise<SpaceMembershipInfo | null>;
+
+  /**
+   * Create a space membership
+   * @param data - The membership data
+   */
+  abstract createMembership(data: CreateMembershipData): Promise<void>;
 }

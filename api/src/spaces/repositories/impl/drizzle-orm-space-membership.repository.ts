@@ -1,9 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
-import { spaceMembers } from "@/spaces/spaces.schema";
-import { and, eq } from "drizzle-orm";
-import type { SpaceMembershipInfo } from "@/spaces/spaces.types";
 import { TransactionHost } from "@nestjs-cls/transactional";
+import { and, eq } from "drizzle-orm";
+import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
+import { spaceMembers } from "../../spaces.schema";
+import type {
+  CreateMembershipData,
+  SpaceMembershipInfo,
+} from "../../spaces.types";
 import { SpaceMembershipRepository } from "../space-membership.repository";
 
 @Injectable()
@@ -44,5 +47,11 @@ export class DrizzleORMRepositorySpaceMembership
     };
 
     return membershipInfo;
+  }
+
+  async createMembership(data: CreateMembershipData): Promise<void> {
+    await this.txHost.tx.insert(spaceMembers).values({
+      ...data,
+    });
   }
 }

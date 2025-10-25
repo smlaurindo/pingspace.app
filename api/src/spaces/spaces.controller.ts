@@ -81,7 +81,7 @@ export class SpacesController {
       shortDescription,
       description,
       slug,
-      ownerId: sub,
+      userId: sub,
     });
 
     reply

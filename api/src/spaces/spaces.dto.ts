@@ -3,7 +3,7 @@ export type CreateSpaceRequest = {
   shortDescription: string;
   description?: string;
   slug?: string;
-  ownerId: string;
+  userId: string;
 };
 
 export type CreateSpaceResponse = {

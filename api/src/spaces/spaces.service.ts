@@ -1,34 +1,28 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Transactional } from "@nestjs-cls/transactional";
-import { eq } from "drizzle-orm";
-import {
-  DrizzleAsyncProvider,
-  type DrizzleDatabase,
-} from "@/drizzle/drizzle.provider";
 import type {
   CreateSpaceRequest,
   CreateSpaceResponse,
   DeleteSpaceRequest,
 } from "./spaces.dto";
-import { spaceMembers, spaces } from "./spaces.schema";
 import { SpaceSlugAlreadyExistsException } from "./exceptions/space-slug-already-exists.exception";
 import { SpaceRepository } from "./repositories/space.repository";
 import { SpaceNotFoundException } from "./exceptions/space-not-found.exception";
 import { SpaceMembershipRepository } from "./repositories/space-membership.repository";
 import { InsufficientSpacePermissionsException } from "./exceptions/insufficient-space-permissions.exception";
 import { UnauthorizedSpaceAccessException } from "./exceptions/unauthorized-space-access.exception";
+import { SPACE_ROLE_OWNER } from "./spaces.schema";
 
 @Injectable()
 export class SpacesService {
   public constructor(
-    @Inject(DrizzleAsyncProvider)
-    private readonly db: DrizzleDatabase,
     private readonly spaceRepository: SpaceRepository,
     private readonly spaceMembershipRepository: SpaceMembershipRepository,
   ) {}
 
+  @Transactional()
   async createSpace(request: CreateSpaceRequest): Promise<CreateSpaceResponse> {
-    const { name, shortDescription, description, slug, ownerId } = request;
+    const { name, shortDescription, description, slug, userId } = request;
 
     const finalSlug =
       slug ||
@@ -39,35 +33,25 @@ export class SpacesService {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
 
-    const existingSpace = await this.db
-      .select({ id: spaces.id })
-      .from(spaces)
-      .where(eq(spaces.slug, finalSlug))
-      .limit(1);
+    const slugExists =
+      await this.spaceRepository.checkSpaceExistsBySlug(finalSlug);
 
-    if (existingSpace.length > 0) {
+    if (slugExists) {
       throw new SpaceSlugAlreadyExistsException(finalSlug);
     }
 
-    const { spaceId } = await this.db.transaction(async (tx) => {
-      const [{ spaceId }] = await tx
-        .insert(spaces)
-        .values({
-          name,
-          slug: finalSlug,
-          shortDescription,
-          description,
-          ownerId,
-        })
-        .returning({ spaceId: spaces.id });
+    const spaceId = await this.spaceRepository.createSpace({
+      name,
+      slug: finalSlug,
+      shortDescription,
+      description,
+      ownerId: userId,
+    });
 
-      await tx.insert(spaceMembers).values({
-        spaceId,
-        memberId: ownerId,
-        role: "OWNER",
-      });
-
-      return { spaceId };
+    await this.spaceMembershipRepository.createMembership({
+      spaceId,
+      memberId: userId,
+      role: SPACE_ROLE_OWNER,
     });
 
     return { spaceId };
