@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1760897992792,
-      "tag": "0000_wandering_lady_deathstrike",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1761236824620,
-      "tag": "0001_motionless_hammerhead",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1761264803547,
-      "tag": "0002_modern_golden_guardian",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1761413452934,
-      "tag": "0003_hard_barracuda",
+      "when": 1761420430320,
+      "tag": "0000_fantastic_riptide",
       "breakpoints": true
     }
   ]

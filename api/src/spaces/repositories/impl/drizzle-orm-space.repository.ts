@@ -22,4 +22,8 @@ export class DrizzleORMSpaceRepository implements SpaceRepository {
 
     return exists;
   }
+
+  async deleteSpace(spaceId: string): Promise<void> {
+    await this.txHost.tx.delete(spaces).where(eq(spaces.id, spaceId));
+  }
 }

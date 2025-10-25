@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
-import { UnauthorizedSpaceAccessException } from "@/topics/exceptions/unauthorized-space-access.exception";
-import { SpaceNotFoundException } from "@/topics/exceptions/space-not-found.exception";
+import { UnauthorizedSpaceAccessException } from "@/spaces/exceptions/unauthorized-space-access.exception";
+import { SpaceNotFoundException } from "@/spaces/exceptions/space-not-found.exception";
 import { Reflector } from "@nestjs/core";
 import { REQUIRED_ROLES_KEY } from "@/spaces/decorators/space-roles.decorator";
 import { SpaceMembershipRepository } from "../repositories/space-membership.repository";

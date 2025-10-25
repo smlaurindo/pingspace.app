@@ -1,5 +1,7 @@
 import type { SpaceMembershipInfo } from "@/spaces/spaces.types";
 
+export type SpaceMemberRole = "OWNER" | "ADMIN" | "MEMBER";
+
 export abstract class SpaceMembershipRepository {
   /**
    * Find a space membership by space ID and user ID

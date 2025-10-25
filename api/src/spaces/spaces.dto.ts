@@ -9,3 +9,8 @@ export type CreateSpaceRequest = {
 export type CreateSpaceResponse = {
   spaceId: string;
 };
+
+export type DeleteSpaceRequest = {
+  spaceId: string;
+  userId: string;
+};

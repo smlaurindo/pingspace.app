@@ -5,4 +5,10 @@ export abstract class SpaceRepository {
    * @returns True if the space exists, false otherwise
    */
   abstract checkSpaceExists(spaceId: string): Promise<boolean>;
+
+  /**
+   * Delete a space by ID
+   * @param spaceId - The space identifier
+   */
+  abstract deleteSpace(spaceId: string): Promise<void>;
 }

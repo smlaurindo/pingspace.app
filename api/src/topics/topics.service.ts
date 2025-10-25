@@ -2,12 +2,12 @@ import { Injectable } from "@nestjs/common";
 import { Transactional } from "@nestjs-cls/transactional";
 import type { CreateTopicRequest, CreateTopicResponse } from "./topics.dto";
 import { TopicSlugAlreadyExistsException } from "./exceptions/topic-slug-already-exists.exception";
-import { UnauthorizedSpaceAccessException } from "./exceptions/unauthorized-space-access.exception";
+import { UnauthorizedSpaceAccessException } from "../spaces/exceptions/unauthorized-space-access.exception";
 import type { SpaceMembershipInfo } from "@/spaces/spaces.types";
 import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "@/spaces/spaces.schema";
 import { TopicRepository } from "./repositories/topic.repository";
 import { SpaceRepository } from "@/spaces/repositories/space.repository";
-import { SpaceNotFoundException } from "./exceptions/space-not-found.exception";
+import { SpaceNotFoundException } from "../spaces/exceptions/space-not-found.exception";
 
 @Injectable()
 export class TopicsService {

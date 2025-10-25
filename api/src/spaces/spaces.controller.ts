@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpStatus,
+  Param,
   Post,
   Res,
   UseFilters,
@@ -9,9 +11,9 @@ import {
 import { z } from "zod";
 import type { FastifyReply } from "fastify";
 import { ZodValidationPipe } from "@/shared/pipes/zod-validation.pipe";
-import { SpacesService } from "./spaces.service";
 import { AuthenticationPrincipal } from "@/shared/decorators/authentication-principal.decorator";
 import type { UserPayload } from "@/@types/user-jwt-payload";
+import { SpacesService } from "./spaces.service";
 import { SpacesExceptionFilter } from "./spaces.filter";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -86,5 +88,21 @@ export class SpacesController {
       .status(HttpStatus.CREATED)
       .header("Location", `/v1/spaces/${spaceId}`)
       .send({ spaceId });
+  }
+
+  @Delete("/v1/spaces/:spaceId")
+  async deleteSpace(
+    @Param("spaceId") spaceId: string,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { sub } = jwt;
+
+    await this.spacesService.deleteSpace({
+      spaceId,
+      userId: sub,
+    });
+
+    reply.status(HttpStatus.NO_CONTENT).send();
   }
 }
