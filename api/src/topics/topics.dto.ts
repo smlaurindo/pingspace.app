@@ -5,6 +5,7 @@ export type CreateTopicRequest = {
   description?: string;
   slug?: string;
   spaceId: string;
+  userId: string;
 };
 
 export type CreateTopicResponse = {

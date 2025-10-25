@@ -6,18 +6,14 @@ import {
   Post,
   Res,
   UseFilters,
-  UseGuards,
 } from "@nestjs/common";
 import { z } from "zod";
 import type { FastifyReply } from "fastify";
+import type { UserPayload } from "@/@types/user-jwt-payload";
 import { ZodValidationPipe } from "@/shared/pipes/zod-validation.pipe";
+import { AuthenticationPrincipal } from "@/shared/decorators/authentication-principal.decorator";
 import { TopicsService } from "./topics.service";
 import { TopicsExceptionFilter } from "./topics.filter";
-import { SpaceMemberGuard } from "@/spaces/guards/space-member.guard";
-import { SpaceMembership } from "@/spaces/decorators/space-membership.decorator";
-import type { SpaceMembershipInfo } from "@/spaces/spaces.types";
-import { SpaceRoles } from "@/spaces/decorators/space-roles.decorator";
-import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "@/spaces/spaces.schema";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -66,32 +62,29 @@ const createTopicSchemaValidationPipe = new ZodValidationPipe(
 type CreateTopicRequestBody = z.infer<typeof createTopicSchema>;
 
 @Controller()
-@UseGuards(SpaceMemberGuard)
 @UseFilters(new TopicsExceptionFilter())
 export class TopicsController {
   public constructor(private readonly topicsService: TopicsService) {}
 
   @Post("/v1/spaces/:spaceId/topics")
-  @SpaceRoles(SPACE_ROLE_OWNER, SPACE_ROLE_ADMIN)
   async createTopic(
     @Param("spaceId") spaceId: string,
     @Body(createTopicSchemaValidationPipe) body: CreateTopicRequestBody,
-    @SpaceMembership() membership: SpaceMembershipInfo,
+    @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
+    const { sub } = jwt;
     const { name, emoji, shortDescription, description, slug } = body;
 
-    const { topicId } = await this.topicsService.createTopic(
-      {
-        name,
-        emoji,
-        shortDescription,
-        description,
-        slug,
-        spaceId,
-      },
-      membership,
-    );
+    const { topicId } = await this.topicsService.createTopic({
+      name,
+      emoji,
+      shortDescription,
+      description,
+      slug,
+      spaceId,
+      userId: sub,
+    });
 
     reply
       .status(HttpStatus.CREATED)

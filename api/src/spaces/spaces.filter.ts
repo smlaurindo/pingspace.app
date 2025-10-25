@@ -10,6 +10,12 @@ import { InsufficientSpacePermissionsException } from "./exceptions/insufficient
 import { SpaceNotFoundException } from "./exceptions/space-not-found.exception";
 import { UnauthorizedSpaceAccessException } from "./exceptions/unauthorized-space-access.exception";
 
+type SpaceException =
+  | SpaceSlugAlreadyExistsException
+  | InsufficientSpacePermissionsException
+  | SpaceNotFoundException
+  | UnauthorizedSpaceAccessException;
+
 @Catch(
   SpaceSlugAlreadyExistsException,
   InsufficientSpacePermissionsException,
@@ -17,14 +23,7 @@ import { UnauthorizedSpaceAccessException } from "./exceptions/unauthorized-spac
   UnauthorizedSpaceAccessException,
 )
 export class SpacesExceptionFilter implements ExceptionFilter {
-  catch(
-    exception:
-      | SpaceSlugAlreadyExistsException
-      | InsufficientSpacePermissionsException
-      | SpaceNotFoundException
-      | UnauthorizedSpaceAccessException,
-    host: ArgumentsHost,
-  ) {
+  catch(exception: SpaceException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const reply = ctx.getResponse<FastifyReply>();
 
