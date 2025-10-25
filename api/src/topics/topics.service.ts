@@ -6,7 +6,7 @@ import { SpaceMembershipRepository } from "@/spaces/repositories/space-membershi
 import { InsufficientSpacePermissionsException } from "@/spaces/exceptions/insufficient-space-permissions.exception";
 import { UnauthorizedSpaceAccessException } from "@/spaces/exceptions/unauthorized-space-access.exception";
 import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "@/spaces/spaces.schema";
-import type { CreateTopicRequest, CreateTopicResponse } from "./topics.dto";
+import type { CreateTopicRequest, CreateTopicResponse } from "./types/topics.dto";
 import { TopicSlugAlreadyExistsException } from "./exceptions/topic-slug-already-exists.exception";
 import { TopicRepository } from "./repositories/topic.repository";
 

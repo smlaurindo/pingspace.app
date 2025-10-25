@@ -1,7 +1,7 @@
 import type {
   CreateMembershipData,
   SpaceMembershipInfo,
-} from "@/spaces/spaces.types";
+} from "@/spaces/types/spaces.types";
 
 export abstract class SpaceMembershipRepository {
   /**

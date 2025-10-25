@@ -4,7 +4,7 @@ import { TransactionHost } from "@nestjs-cls/transactional";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { spaces } from "@/spaces/spaces.schema";
 import { SpaceRepository } from "../space.repository";
-import { CreateSpaceData } from "@/spaces/spaces.types";
+import { CreateSpaceData } from "@/spaces/types/spaces.types";
 
 @Injectable()
 export class DrizzleORMSpaceRepository implements SpaceRepository {

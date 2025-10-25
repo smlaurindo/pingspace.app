@@ -6,7 +6,7 @@ import { spaceMembers } from "../../spaces.schema";
 import type {
   CreateMembershipData,
   SpaceMembershipInfo,
-} from "../../spaces.types";
+} from "../../types/spaces.types";
 import { SpaceMembershipRepository } from "../space-membership.repository";
 
 @Injectable()

@@ -4,7 +4,7 @@ import type {
   CreateSpaceRequest,
   CreateSpaceResponse,
   DeleteSpaceRequest,
-} from "./spaces.dto";
+} from "./types/spaces.dto";
 import { SpaceSlugAlreadyExistsException } from "./exceptions/space-slug-already-exists.exception";
 import { SpaceRepository } from "./repositories/space.repository";
 import { SpaceNotFoundException } from "./exceptions/space-not-found.exception";

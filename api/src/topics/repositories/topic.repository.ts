@@ -1,4 +1,4 @@
-import type { CreateTopicData, TopicInfo } from "../topics.types";
+import type { CreateTopicData, TopicInfo } from "../types/topics.types";
 
 export abstract class TopicRepository {
   /**

@@ -1,4 +1,4 @@
-import { CreateSpaceData } from "../spaces.types";
+import { CreateSpaceData } from "../types/spaces.types";
 
 export abstract class SpaceRepository {
   /**
