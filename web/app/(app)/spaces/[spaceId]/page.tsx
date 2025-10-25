@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronLeftIcon, LogOutIcon, TextAlignJustifyIcon as MenuIcon, PinIcon, UsersRoundIcon } from "lucide-react";
+import { ChevronLeftIcon, CirclePlusIcon, LogOutIcon, TextAlignJustifyIcon as MenuIcon, PinIcon, UsersRoundIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { type PointerEvent } from "react";
 
@@ -61,6 +61,18 @@ export default function SpacePage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="pb-2">
+            <DropdownMenuItem onClick={() => router.push(`/spaces/${spaceId}/topics/create`)}>
+              <div
+                className="flex size-9 items-center justify-center rounded-lg border border-border bg-background"
+                aria-hidden="true"
+              >
+                <CirclePlusIcon className="size-5" strokeWidth={2} />
+              </div>
+              <div className="flex flex-col items-start">
+                <span>Create Topic</span>
+                <span className="text-xs text-muted-foreground">Create a new topic in this space</span>
+              </div>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/spaces/${spaceId}/leave`)}>
               <div
                 className="flex size-9 items-center justify-center rounded-lg border border-border bg-background"
@@ -86,10 +98,7 @@ export default function SpacePage() {
             style={{ touchAction: "manipulation" }}
           >
             <div className="flex items-center gap-2 min-w-0">
-              {/* <Avatar className="size-12">
-                <AvatarImage />
-                <AvatarFallback>OF</AvatarFallback>
-              </Avatar> */}
+              <p className="self-start">🆕</p>
               <div className="flex flex-col min-w-0">
                 <h2 className="text-lg font-semibold truncate leading-tight">New Users</h2>
                 <p className="text-sm text-muted-foreground truncate">
@@ -114,10 +123,7 @@ export default function SpacePage() {
             style={{ touchAction: "manipulation" }}
           >
             <div className="flex items-center gap-2 min-w-0">
-              {/* <Avatar className="size-12">
-                <AvatarImage />
-                <AvatarFallback>OF</AvatarFallback>
-              </Avatar> */}
+              <p className="self-start">🔵</p>
               <div className="flex flex-col min-w-0">
                 <h2 className="text-lg font-semibold truncate leading-tight">Deployment Pings</h2>
                 <p className="text-sm text-muted-foreground truncate">
@@ -139,10 +145,7 @@ export default function SpacePage() {
             style={{ touchAction: "manipulation" }}
           >
             <div className="flex items-center gap-2 min-w-0">
-              {/* <Avatar className="size-12">
-                <AvatarImage />
-                <AvatarFallback>OF</AvatarFallback>
-              </Avatar> */}
+              <p className="self-start">💰</p>
               <div className="flex flex-col min-w-0">
                 <h2 className="text-lg font-semibold truncate leading-tight">New Subscriptions</h2>
                 <p className="text-sm text-muted-foreground truncate">

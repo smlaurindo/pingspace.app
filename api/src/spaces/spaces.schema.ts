@@ -38,17 +38,25 @@ export const spaces = pgTable(
   ],
 );
 
+export const SPACE_ROLE_OWNER = "OWNER";
+export const SPACE_ROLE_ADMIN = "ADMIN";
+export const SPACE_ROLE_MEMBER = "MEMBER";
+
 export const spaceMemberRole = pgEnum("space_member_role", [
-  "OWNER",
-  "ADMIN",
-  "MEMBER",
+  SPACE_ROLE_OWNER,
+  SPACE_ROLE_ADMIN,
+  SPACE_ROLE_MEMBER,
 ]);
 
 export const spaceMembers = pgTable(
   "space_members",
   {
-    spaceId: text("space_id").references(() => spaces.id),
-    memberId: text("member_id").references(() => users.id),
+    spaceId: text("space_id")
+      .references(() => spaces.id)
+      .notNull(),
+    memberId: text("member_id")
+      .references(() => users.id)
+      .notNull(),
     role: spaceMemberRole("role").notNull().default("MEMBER"),
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
   },

@@ -13,6 +13,11 @@ async function bootstrap() {
     new FastifyAdapter(),
   );
 
+  app.use((req, res, next) => {
+    console.log(`[${req.method}] ${req.url}`);
+    next();
+  });
+
   const { CORS_ORIGIN, PORT } = process.env;
 
   app.enableCors({ origin: CORS_ORIGIN, credentials: true });
