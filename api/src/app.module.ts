@@ -8,6 +8,7 @@ import { ConfigModule } from "@/config/config.module";
 import { SpacesModule } from "@/spaces/spaces.module";
 import { TopicsModule } from "@/topics/topics.module";
 import { DrizzleAsyncProvider } from "@/drizzle/drizzle.provider";
+import { ApiKeysModule } from "@/api-keys/api-keys.module";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { DrizzleAsyncProvider } from "@/drizzle/drizzle.provider";
     AuthModule,
     SpacesModule,
     TopicsModule,
+    ApiKeysModule,
     ClsModule.forRoot({
       global: true,
       plugins: [
