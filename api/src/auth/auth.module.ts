@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { AuthController } from "./auth.controller";
+import { APP_GUARD } from "@nestjs/core";
 import { JwtModule, type JwtSignOptions } from "@nestjs/jwt";
 import { ConfigModule } from "@/config/config.module";
 import { ConfigService } from "@/config/config.service";
 import { DrizzleModule } from "@/drizzle/drizzle.module";
-import { APP_GUARD } from "@nestjs/core";
+import { AuthService } from "./auth.service";
+import { AuthController } from "./auth.controller";
 import { AuthGuard } from "./guards/auth.guard";
 
 @Module({
