@@ -50,6 +50,30 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     return topic;
   }
 
+  async findBySlug(slug: string): Promise<TopicInfo | null> {
+    const [topic] = await this.txHost.tx
+      .select({
+        id: topics.id,
+        spaceId: topics.spaceId,
+        name: topics.name,
+        slug: topics.slug,
+        emoji: topics.emoji,
+        shortDescription: topics.shortDescription,
+        description: topics.description,
+        createdAt: topics.createdAt,
+        updatedAt: topics.updatedAt,
+      })
+      .from(topics)
+      .where(eq(topics.slug, slug))
+      .limit(1);
+
+    if (!topic) {
+      return null;
+    }
+
+    return topic;
+  }
+
   async existsBySpaceAndSlug(spaceId: string, slug: string): Promise<boolean> {
     const [result] = await this.txHost.tx
       .select({ id: topics.id })

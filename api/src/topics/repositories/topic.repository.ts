@@ -20,6 +20,14 @@ export abstract class TopicRepository {
   ): Promise<TopicInfo | null>;
 
   /**
+   * Find a topic by slug only (across all spaces)
+   * Used for public API endpoints where topic slug is globally unique
+   * @param slug - The topic slug
+   * @returns The topic info or null if not found
+   */
+  abstract findBySlug(slug: string): Promise<TopicInfo | null>;
+
+  /**
    * Check if a topic exists by space ID and slug
    * @param spaceId - The space identifier
    * @param slug - The topic slug

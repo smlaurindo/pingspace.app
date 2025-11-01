@@ -16,5 +16,6 @@ import { DrizzleORMTopicRepository } from "./repositories/impl/drizzle-orm-topic
       useClass: DrizzleORMTopicRepository,
     },
   ],
+  exports: [TopicRepository],
 })
 export class TopicsModule {}
