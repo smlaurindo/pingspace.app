@@ -7,6 +7,7 @@ import { DrizzleModule } from "@/drizzle/drizzle.module";
 import { ConfigModule } from "@/config/config.module";
 import { SpacesModule } from "@/spaces/spaces.module";
 import { TopicsModule } from "@/topics/topics.module";
+import { PingsModule } from "@/pings/pings.module";
 import { DrizzleAsyncProvider } from "@/drizzle/drizzle.provider";
 import { ApiKeysModule } from "@/api-keys/api-keys.module";
 
@@ -18,6 +19,7 @@ import { ApiKeysModule } from "@/api-keys/api-keys.module";
     SpacesModule,
     TopicsModule,
     ApiKeysModule,
+    PingsModule,
     ClsModule.forRoot({
       global: true,
       plugins: [

@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const topics = pgTable(
@@ -39,5 +40,38 @@ export const topics = pgTable(
       .onUpdate("no action"),
     index("topics_idx_fk_space").on(table.spaceId),
     index("topics_idx_space_slug").on(table.spaceId, table.slug),
+  ],
+);
+
+export const topicTags = pgTable(
+  "topic_tags",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .notNull(),
+    name: text("name").notNull(),
+    topicId: text("topic_id")
+      .notNull()
+      .references(() => topics.id),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    primaryKey({ name: "topic_tags_pk_id", columns: [table.id] }),
+
+    foreignKey({
+      name: "topic_tags_fk_topic",
+      columns: [table.topicId],
+      foreignColumns: [topics.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("no action"),
+
+    unique("topic_tags_unique_name_topic").on(table.name, table.topicId),
+
+    index("topic_tags_idx_fk_topic").on(table.topicId),
+
+    index("topic_tags_idx_name_fk_topic").on(table.name, table.topicId),
   ],
 );
