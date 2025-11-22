@@ -1,6 +1,6 @@
 import { BaseException } from "@/shared/exceptions/base-exception";
 
-export class ApiKeyNotFoundException extends BaseException {
+export class SpaceApiKeyNotFoundException extends BaseException {
   override code: string = "API_KEY_NOT_FOUND";
   override message: string;
   override details: string =

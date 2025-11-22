@@ -14,7 +14,7 @@ import { ZodValidationPipe } from "@/shared/pipes/zod-validation.pipe";
 import { PingsService } from "./pings.service";
 import { PingsExceptionFilter } from "./pings.filter";
 import { ApiKeyPrincipal } from "@/shared/decorators/api-key-principal.decorator";
-import { ApiKeyGuard } from "@/spaces/api-keys/guards/api-key.guard";
+import { SpaceApiKeyGuard } from "../../guards/space-api-key.guard";
 import type { ApiKeyPayload } from "@/@types/api-key-payload";
 
 const baseActionSchema = z.object({
@@ -101,7 +101,7 @@ export class PingsController {
   constructor(private readonly pingsService: PingsService) {}
 
   @Post("/v1/topics/:topicSlug/pings")
-  @UseGuards(ApiKeyGuard)
+  @UseGuards(SpaceApiKeyGuard)
   async create(
     @Param(createPingParamsPipe) params: CreatePingRequestParams,
     @Body(createPingBodyPipe) body: CreatePingRequestBody,

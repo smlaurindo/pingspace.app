@@ -19,3 +19,23 @@ export type CreateMembershipData = {
   spaceId: string;
   memberId: string;
 };
+
+export type CreateSpaceApiKeyData = {
+  spaceId: string;
+  keyHash: string;
+  name: string;
+  description?: string;
+  createdBy: string;
+};
+
+export type SpaceApiKey = {
+  id: string;
+  spaceId: string;
+  keyHash: string;
+  name: string;
+  description: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  createdBy: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+};

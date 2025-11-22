@@ -1,16 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { Transactional } from "@nestjs-cls/transactional";
-import { ApiKeyNotFoundException } from "../../api-keys/exceptions/api-key-not-found.exception";
-import { ApiKeyRepository } from "../../api-keys/repositories/api-key.repository";
+import { SpaceApiKeyRepository } from "../../repositories/space-api-key.repository";
 import { TopicRepository } from "../repositories/topic.repository";
 import { PingRepository } from "./repositories/ping.repository";
+import { SpaceApiKeyNotFoundException } from "../../exceptions/space-api-key-not-found.exception";
 import { TopicNotFoundException } from "./exceptions/topic-not-found.exception";
 import type { CreatePingRequest, CreatePingResponse } from "./types/pings.dto";
 
 @Injectable()
 export class PingsService {
   public constructor(
-    private readonly apiKeyRepository: ApiKeyRepository,
+    private readonly spaceApiKeyRepository: SpaceApiKeyRepository,
     private readonly topicRepository: TopicRepository,
     private readonly pingRepository: PingRepository,
   ) {}
@@ -40,10 +40,10 @@ export class PingsService {
     const { apiKeyId, topicSlug, title, contentType, content, tags, actions } =
       request;
 
-    const apiKey = await this.apiKeyRepository.findById(apiKeyId);
+    const apiKey = await this.spaceApiKeyRepository.findById(apiKeyId);
 
     if (!apiKey) {
-      throw new ApiKeyNotFoundException(apiKeyId);
+      throw new SpaceApiKeyNotFoundException(apiKeyId);
     }
 
     const topic = await this.topicRepository.findBySpaceAndSlug(

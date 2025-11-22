@@ -6,6 +6,9 @@ import { DrizzleORMRepositorySpaceMembership } from "./repositories/impl/drizzle
 import { SpaceMembershipRepository } from "./repositories/space-membership.repository";
 import { SpaceRepository } from "./repositories/space.repository";
 import { DrizzleORMSpaceRepository } from "./repositories/impl/drizzle-orm-space.repository";
+import { SpaceApiKeyRepository } from "./repositories/space-api-key.repository";
+import { DrizzleORMSpaceApiKeyRepository } from "./repositories/impl/drizzle-orm-space-api-key.repository";
+import { SpaceApiKeyGuard } from "./guards/space-api-key.guard";
 
 @Module({
   imports: [DrizzleModule],
@@ -17,10 +20,15 @@ import { DrizzleORMSpaceRepository } from "./repositories/impl/drizzle-orm-space
       useClass: DrizzleORMRepositorySpaceMembership,
     },
     {
+      provide: SpaceApiKeyRepository,
+      useClass: DrizzleORMSpaceApiKeyRepository,
+    },
+    {
       provide: SpaceRepository,
       useClass: DrizzleORMSpaceRepository,
     },
+    SpaceApiKeyGuard,
   ],
-  exports: [SpaceMembershipRepository, SpaceRepository],
+  exports: [SpaceMembershipRepository, SpaceRepository, SpaceApiKeyRepository],
 })
 export class SpacesModule {}

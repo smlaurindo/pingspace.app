@@ -15,6 +15,7 @@ import { AuthenticationPrincipal } from "@/shared/decorators/authentication-prin
 import type { UserPayload } from "@/@types/user-jwt-payload";
 import { SpacesService } from "./spaces.service";
 import { SpacesExceptionFilter } from "./spaces.filter";
+import { ZodCUIDParameterValidationPipe } from "@/shared/pipes/zod-cuid-validation.pipe";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -62,6 +63,25 @@ const createSpaceSchemaValidationPipe = new ZodValidationPipe(
 
 type CreateSpaceRequestBody = z.infer<typeof createSpaceSchema>;
 
+const createSpaceApiKeySchema = z.object({
+  name: z
+    .string()
+    .min(3, "Name must be at least 3 characters")
+    .max(50, "Name must be at most 50 characters")
+    .transform((val) => val.trim()),
+  description: z
+    .string()
+    .max(1000, "Description must be at most 1000 characters")
+    .optional()
+    .transform((val) => val?.trim() || undefined),
+});
+
+const createSpaceApiKeyValidationPipe = new ZodValidationPipe(
+  createSpaceApiKeySchema,
+);
+
+type CreateSpaceApiKeyRequestBody = z.infer<typeof createSpaceApiKeySchema>;
+
 @Controller()
 @UseFilters(new SpacesExceptionFilter())
 export class SpacesController {
@@ -104,5 +124,25 @@ export class SpacesController {
     });
 
     reply.status(HttpStatus.NO_CONTENT).send();
+  }
+
+  @Post("/v1/spaces/:spaceId/api-key")
+  async createSpaceApiKey(
+    @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
+    @Body(createSpaceApiKeyValidationPipe) body: CreateSpaceApiKeyRequestBody,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { sub } = jwt;
+    const { name, description } = body;
+
+    const apiKey = await this.spacesService.createApiKey({
+      name,
+      description,
+      spaceId,
+      userId: sub,
+    });
+
+    return reply.status(HttpStatus.CREATED).send({ apiKey });
   }
 }

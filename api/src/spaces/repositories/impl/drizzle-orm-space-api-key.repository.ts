@@ -2,17 +2,17 @@ import { Injectable } from "@nestjs/common";
 import { TransactionHost } from "@nestjs-cls/transactional";
 import { eq } from "drizzle-orm";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
-import { ApiKeyRepository } from "../api-key.repository";
-import { ApiKey, CreateApiKeyData } from "../../types/api-keys.types";
-import { spaceApiKeys } from "../../api-keys.schema";
+import { SpaceApiKeyRepository } from "../space-api-key.repository";
+import { CreateSpaceApiKeyData, SpaceApiKey } from "../../types/spaces.types";
+import { spaceApiKeys } from "../../spaces.schema";
 
 @Injectable()
-export class DrizzleORMApiKeyRepository implements ApiKeyRepository {
+export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
   constructor(
     private readonly txHost: TransactionHost<TransactionalAdapterDrizzleORM>,
   ) {}
 
-  async create(data: CreateApiKeyData): Promise<ApiKey> {
+  async create(data: CreateSpaceApiKeyData): Promise<SpaceApiKey> {
     const [apiKey] = await this.txHost.tx
       .insert(spaceApiKeys)
       .values({
@@ -40,7 +40,7 @@ export class DrizzleORMApiKeyRepository implements ApiKeyRepository {
     };
   }
 
-  async findById(apiKeyId: string): Promise<ApiKey | null> {
+  async findById(spaceApiKeyId: string): Promise<SpaceApiKey | null> {
     const [apiKey] = await this.txHost.tx
       .select({
         id: spaceApiKeys.id,
@@ -54,7 +54,7 @@ export class DrizzleORMApiKeyRepository implements ApiKeyRepository {
         lastUsedAt: spaceApiKeys.lastUsedAt,
       })
       .from(spaceApiKeys)
-      .where(eq(spaceApiKeys.id, apiKeyId))
+      .where(eq(spaceApiKeys.id, spaceApiKeyId))
       .limit(1);
 
     if (!apiKey) {
@@ -64,10 +64,10 @@ export class DrizzleORMApiKeyRepository implements ApiKeyRepository {
     return apiKey;
   }
 
-  async updateLastUsed(apiKeyId: string): Promise<void> {
+  async updateLastUsed(spaceApiKeyId: string): Promise<void> {
     await this.txHost.tx
       .update(spaceApiKeys)
       .set({ lastUsedAt: new Date().toISOString() })
-      .where(eq(spaceApiKeys.id, apiKeyId));
+      .where(eq(spaceApiKeys.id, spaceApiKeyId));
   }
 }

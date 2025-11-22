@@ -9,12 +9,12 @@ import type { FastifyRequest } from "fastify";
 import { compare } from "bcrypt";
 import { ApiKeyPayload } from "@/@types/api-key-payload";
 import { IS_PUBLIC_KEY } from "@/shared/decorators/skip-auth.decorator";
-import { ApiKeyRepository } from "@/spaces/api-keys/repositories/api-key.repository";
+import { SpaceApiKeyRepository } from "../repositories/space-api-key.repository";
 
 @Injectable()
-export class ApiKeyGuard implements CanActivate {
+export class SpaceApiKeyGuard implements CanActivate {
   constructor(
-    private readonly apiKeyRepository: ApiKeyRepository,
+    private readonly spaceApiKeyRepository: SpaceApiKeyRepository,
     private readonly reflector: Reflector,
   ) {}
 
@@ -42,7 +42,7 @@ export class ApiKeyGuard implements CanActivate {
       throw new UnauthorizedException("Malformed API Key");
     }
 
-    const storedApiKey = await this.apiKeyRepository.findById(keyId);
+    const storedApiKey = await this.spaceApiKeyRepository.findById(keyId);
 
     if (!storedApiKey) {
       throw new UnauthorizedException("API Key not found");

@@ -14,3 +14,18 @@ export type DeleteSpaceRequest = {
   spaceId: string;
   userId: string;
 };
+
+export type CreateSpaceApiKeyRequest = {
+  spaceId: string;
+  userId: string;
+  name: string;
+  description?: string;
+};
+
+export type CreateSpaceApiKeyResponse = {
+  id: string;
+  name: string;
+  description: string | null;
+  key: string;
+  createdAt: string;
+};

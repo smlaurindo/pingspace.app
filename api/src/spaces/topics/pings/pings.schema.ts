@@ -8,8 +8,8 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { spaceApiKeys } from "../../api-keys/api-keys.schema";
 import { topics, topicTags } from "../topics.schema";
+import { spaceApiKeys } from "../../spaces.schema";
 
 export const pings = pgTable(
   "pings",
