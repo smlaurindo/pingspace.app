@@ -48,7 +48,7 @@ export class SpaceApiKeyGuard implements CanActivate {
       throw new UnauthorizedException("API Key not found");
     }
 
-    const isValid = await compare(apiKey, storedApiKey.keyHash);
+    const isValid = await compare(rawSecret, storedApiKey.keyHash);
 
     if (!isValid) {
       throw new UnauthorizedException("Invalid API Key");
