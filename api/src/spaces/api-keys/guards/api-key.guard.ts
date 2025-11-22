@@ -9,7 +9,7 @@ import type { FastifyRequest } from "fastify";
 import { compare } from "bcrypt";
 import { ApiKeyPayload } from "@/@types/api-key-payload";
 import { IS_PUBLIC_KEY } from "@/shared/decorators/skip-auth.decorator";
-import { ApiKeyRepository } from "@/api-keys/repositories/api-key.repository";
+import { ApiKeyRepository } from "@/spaces/api-keys/repositories/api-key.repository";
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {

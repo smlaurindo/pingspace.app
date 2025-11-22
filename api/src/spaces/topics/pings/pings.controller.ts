@@ -14,7 +14,7 @@ import { ZodValidationPipe } from "@/shared/pipes/zod-validation.pipe";
 import { PingsService } from "./pings.service";
 import { PingsExceptionFilter } from "./pings.filter";
 import { ApiKeyPrincipal } from "@/shared/decorators/api-key-principal.decorator";
-import { ApiKeyGuard } from "@/api-keys/guards/api-key.guard";
+import { ApiKeyGuard } from "@/spaces/api-keys/guards/api-key.guard";
 import type { ApiKeyPayload } from "@/@types/api-key-payload";
 
 const baseActionSchema = z.object({

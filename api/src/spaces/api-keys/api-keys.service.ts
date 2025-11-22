@@ -2,14 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { Transactional } from "@nestjs-cls/transactional";
 import { randomBytes } from "node:crypto";
 import { hash } from "bcrypt";
-import { SpaceRepository } from "@/spaces/repositories/space.repository";
-import { SpaceMembershipRepository } from "@/spaces/repositories/space-membership.repository";
-import { SpaceNotFoundException } from "@/spaces/exceptions/space-not-found.exception";
-import { UnauthorizedSpaceAccessException } from "@/spaces/exceptions/unauthorized-space-access.exception";
-import { InsufficientSpacePermissionsException } from "@/spaces/exceptions/insufficient-space-permissions.exception";
-import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "@/spaces/spaces.schema";
 import { ConfigService } from "@/config/config.service";
 import { ApiKeyRepository } from "./repositories/api-key.repository";
+import { SpaceRepository } from "../repositories/space.repository";
+import { SpaceMembershipRepository } from "../repositories/space-membership.repository";
+import { SpaceNotFoundException } from "../exceptions/space-not-found.exception";
+import { UnauthorizedSpaceAccessException } from "../exceptions/unauthorized-space-access.exception";
+import { InsufficientSpacePermissionsException } from "../exceptions/insufficient-space-permissions.exception";
+import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "../spaces.schema";
 import type {
   CreateApiKeyRequest,
   CreateApiKeyResponse,

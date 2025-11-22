@@ -1,17 +1,17 @@
 import { Injectable } from "@nestjs/common";
 import { Transactional } from "@nestjs-cls/transactional";
-import { SpaceRepository } from "@/spaces/repositories/space.repository";
-import { SpaceNotFoundException } from "@/spaces/exceptions/space-not-found.exception";
-import { SpaceMembershipRepository } from "@/spaces/repositories/space-membership.repository";
-import { InsufficientSpacePermissionsException } from "@/spaces/exceptions/insufficient-space-permissions.exception";
-import { UnauthorizedSpaceAccessException } from "@/spaces/exceptions/unauthorized-space-access.exception";
-import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "@/spaces/spaces.schema";
+import { SpaceRepository } from "../repositories/space.repository";
+import { SpaceNotFoundException } from "../exceptions/space-not-found.exception";
+import { SpaceMembershipRepository } from "../repositories/space-membership.repository";
+import { UnauthorizedSpaceAccessException } from "../exceptions/unauthorized-space-access.exception";
+import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "../spaces.schema";
+import { InsufficientSpacePermissionsException } from "../exceptions/insufficient-space-permissions.exception";
+import { TopicSlugAlreadyExistsException } from "./exceptions/topic-slug-already-exists.exception";
+import { TopicRepository } from "./repositories/topic.repository";
 import type {
   CreateTopicRequest,
   CreateTopicResponse,
 } from "./types/topics.dto";
-import { TopicSlugAlreadyExistsException } from "./exceptions/topic-slug-already-exists.exception";
-import { TopicRepository } from "./repositories/topic.repository";
 
 @Injectable()
 export class TopicsService {

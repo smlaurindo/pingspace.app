@@ -6,8 +6,8 @@ import {
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
 import { TopicSlugAlreadyExistsException } from "./exceptions/topic-slug-already-exists.exception";
-import { SpaceNotFoundException } from "@/spaces/exceptions/space-not-found.exception";
-import { UnauthorizedSpaceAccessException } from "@/spaces/exceptions/unauthorized-space-access.exception";
+import { SpaceNotFoundException } from "../exceptions/space-not-found.exception";
+import { UnauthorizedSpaceAccessException } from "../exceptions/unauthorized-space-access.exception";
 
 type TopicException =
   | TopicSlugAlreadyExistsException

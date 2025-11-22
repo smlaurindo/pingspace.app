@@ -1,4 +1,3 @@
-import { spaces } from "@/spaces/spaces.schema";
 import { createId } from "@paralleldrive/cuid2";
 import {
   foreignKey,
@@ -9,6 +8,7 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
+import { spaces } from "../spaces.schema";
 
 export const topics = pgTable(
   "topics",

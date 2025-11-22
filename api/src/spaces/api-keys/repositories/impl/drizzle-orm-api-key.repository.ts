@@ -2,9 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { TransactionHost } from "@nestjs-cls/transactional";
 import { eq } from "drizzle-orm";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
-import { spaceApiKeys } from "@/api-keys/api-keys.schema";
-import type { CreateApiKeyData, ApiKey } from "@/api-keys/types/api-keys.types";
 import { ApiKeyRepository } from "../api-key.repository";
+import { ApiKey, CreateApiKeyData } from "../../types/api-keys.types";
+import { spaceApiKeys } from "../../api-keys.schema";
 
 @Injectable()
 export class DrizzleORMApiKeyRepository implements ApiKeyRepository {

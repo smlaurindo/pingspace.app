@@ -1,10 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { TransactionHost } from "@nestjs-cls/transactional";
-import { topics } from "@/topics/topics.schema";
+import { topics } from "@/spaces/topics/topics.schema";
 import { and, eq } from "drizzle-orm";
 import { TopicRepository } from "../topic.repository";
-import type { CreateTopicData, TopicInfo } from "@/topics/types/topics.types";
+import type {
+  CreateTopicData,
+  TopicInfo,
+} from "@/spaces/topics/types/topics.types";
 
 @Injectable()
 export class DrizzleORMTopicRepository implements TopicRepository {

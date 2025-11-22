@@ -7,7 +7,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { spaces } from "@/spaces/spaces.schema";
+import { spaces } from "../spaces.schema";
 import { users } from "@/auth/users.schema";
 
 export const spaceApiKeys = pgTable(

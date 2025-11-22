@@ -1,5 +1,3 @@
-import { spaceApiKeys } from "@/api-keys/api-keys.schema";
-import { topics, topicTags } from "@/topics/topics.schema";
 import { createId } from "@paralleldrive/cuid2";
 import { unique } from "drizzle-orm/pg-core";
 import {
@@ -10,6 +8,8 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { spaceApiKeys } from "../../api-keys/api-keys.schema";
+import { topics, topicTags } from "../topics.schema";
 
 export const pings = pgTable(
   "pings",

@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { Transactional } from "@nestjs-cls/transactional";
-import { TopicRepository } from "@/topics/repositories/topic.repository";
+import { ApiKeyNotFoundException } from "../../api-keys/exceptions/api-key-not-found.exception";
+import { ApiKeyRepository } from "../../api-keys/repositories/api-key.repository";
+import { TopicRepository } from "../repositories/topic.repository";
 import { PingRepository } from "./repositories/ping.repository";
 import { TopicNotFoundException } from "./exceptions/topic-not-found.exception";
 import type { CreatePingRequest, CreatePingResponse } from "./types/pings.dto";
-import { ApiKeyRepository } from "@/api-keys/repositories/api-key.repository";
-import { ApiKeyNotFoundException } from "@/api-keys/exceptions/api-key-not-found.exception";
 
 @Injectable()
 export class PingsService {

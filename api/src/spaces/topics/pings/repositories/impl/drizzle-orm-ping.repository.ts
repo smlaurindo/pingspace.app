@@ -5,7 +5,7 @@ import { PingRepository } from "../ping.repository";
 import { CreatePingData, Ping } from "../../types/pings.types";
 import { pingActions, pings, pingTags } from "../../pings.schema";
 import { and, eq } from "drizzle-orm";
-import { topicTags } from "@/topics/topics.schema";
+import { topicTags } from "@/spaces/topics/topics.schema";
 
 @Injectable()
 export class DrizzleORMPingRepository implements PingRepository {
