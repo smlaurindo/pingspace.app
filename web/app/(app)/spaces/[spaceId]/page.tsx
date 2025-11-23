@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronLeftIcon, CirclePlusIcon, LogOutIcon, TextAlignJustifyIcon as MenuIcon, PinIcon, UsersRoundIcon } from "lucide-react";
+import { ChevronLeftIcon, CirclePlusIcon, KeySquareIcon, LogOutIcon, TextAlignJustifyIcon as MenuIcon, PinIcon, UsersRoundIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { type PointerEvent } from "react";
 
@@ -61,6 +61,18 @@ export default function SpacePage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="pb-2">
+            <DropdownMenuItem onClick={() => router.push(`/spaces/${spaceId}/api-keys`)}>
+              <div
+                className="flex size-9 items-center justify-center rounded-lg border border-border bg-background"
+                aria-hidden="true"
+              >
+                <KeySquareIcon className="size-5" strokeWidth={2} />
+              </div>
+              <div className="flex flex-col items-start">
+                <span>Create API Key</span>
+                <span className="text-xs text-muted-foreground">Create a new API key for this space</span>
+              </div>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/spaces/${spaceId}/topics/create`)}>
               <div
                 className="flex size-9 items-center justify-center rounded-lg border border-border bg-background"

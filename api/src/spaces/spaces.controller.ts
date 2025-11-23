@@ -71,7 +71,7 @@ const createSpaceApiKeySchema = z.object({
     .transform((val) => val.trim()),
   description: z
     .string()
-    .max(1000, "Description must be at most 1000 characters")
+    .max(200, "Description must be at most 200 characters")
     .optional()
     .transform((val) => val?.trim() || undefined),
 });
@@ -143,6 +143,6 @@ export class SpacesController {
       userId: sub,
     });
 
-    return reply.status(HttpStatus.CREATED).send({ apiKey });
+    return reply.status(HttpStatus.CREATED).send(apiKey);
   }
 }
