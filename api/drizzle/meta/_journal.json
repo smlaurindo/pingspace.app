@@ -15,6 +15,13 @@
       "when": 1763836165895,
       "tag": "0001_clever_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763945693142,
+      "tag": "0002_overconfident_ultimo",
+      "breakpoints": true
     }
   ]
 }
