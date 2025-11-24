@@ -1,10 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { TransactionHost } from "@nestjs-cls/transactional";
-import { eq } from "drizzle-orm";
+import { eq, desc, lt, and } from "drizzle-orm";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { SpaceApiKeyRepository } from "../space-api-key.repository";
-import { CreateSpaceApiKeyData, SpaceApiKey } from "../../types/spaces.types";
+import {
+  CreateSpaceApiKeyData,
+  ListSpaceApiKeyQuery,
+  PaginatedSpaceApiKeys,
+  SpaceApiKey,
+} from "../../types/spaces.types";
 import { spaceApiKeys } from "../../spaces.schema";
+import { users } from "@/auth/users.schema";
 
 @Injectable()
 export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
@@ -69,5 +75,55 @@ export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
       .update(spaceApiKeys)
       .set({ lastUsedAt: new Date().toISOString() })
       .where(eq(spaceApiKeys.id, spaceApiKeyId));
+  }
+
+  async listBySpace({
+    spaceId,
+    limit,
+    type,
+    cursor,
+  }: ListSpaceApiKeyQuery): Promise<PaginatedSpaceApiKeys> {
+    const conditions = [
+      eq(spaceApiKeys.spaceId, spaceId),
+      eq(spaceApiKeys.status, type),
+    ];
+
+    if (cursor) {
+      conditions.push(lt(spaceApiKeys.createdAt, cursor));
+    }
+
+    const items = await this.txHost.tx
+      .select({
+        id: spaceApiKeys.id,
+        name: spaceApiKeys.name,
+        description: spaceApiKeys.description,
+        status: spaceApiKeys.status,
+        createdAt: spaceApiKeys.createdAt,
+        lastUsedAt: spaceApiKeys.lastUsedAt,
+        createdBy: {
+          id: users.id,
+          nickname: users.nickname,
+        },
+      })
+      .from(spaceApiKeys)
+      .leftJoin(users, eq(spaceApiKeys.createdBy, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(spaceApiKeys.createdAt))
+      .limit(limit + 1);
+
+    const hasNextPage = items.length > limit;
+    const results = hasNextPage ? items.slice(0, limit) : items;
+    const nextCursor = hasNextPage
+      ? results[results.length - 1].createdAt
+      : null;
+
+    return {
+      items: results,
+      pagination: {
+        nextCursor,
+        hasNextPage,
+        limit,
+      },
+    };
   }
 }

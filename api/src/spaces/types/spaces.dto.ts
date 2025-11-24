@@ -29,3 +29,31 @@ export type CreateSpaceApiKeyResponse = {
   key: string;
   createdAt: string;
 };
+
+export type ListSpaceApiKeysRequest = {
+  spaceId: string;
+  userId: string;
+  cursor?: string;
+  limit: number;
+  type: "ACTIVE" | "INACTIVE";
+};
+
+export type ListSpaceApiKeysResponse = {
+  items: {
+    id: string;
+    name: string;
+    description: string | null;
+    status: "ACTIVE" | "INACTIVE";
+    createdAt: string;
+    lastUsedAt: string | null;
+    createdBy: {
+      id: string;
+      nickname: string;
+    } | null;
+  }[];
+  pagination: {
+    nextCursor: string | null;
+    hasNextPage: boolean;
+    limit: number;
+  };
+};

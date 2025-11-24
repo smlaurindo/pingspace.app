@@ -1,4 +1,9 @@
-import { CreateSpaceApiKeyData, SpaceApiKey } from "../types/spaces.types";
+import {
+  CreateSpaceApiKeyData,
+  ListSpaceApiKeyQuery,
+  PaginatedSpaceApiKeys,
+  SpaceApiKey,
+} from "../types/spaces.types";
 
 export abstract class SpaceApiKeyRepository {
   /**
@@ -20,4 +25,8 @@ export abstract class SpaceApiKeyRepository {
    * @param spaceApiKeyId - The API key ID
    */
   abstract updateLastUsed(spaceApiKeyId: string): Promise<void>;
+
+  abstract listBySpace(
+    query: ListSpaceApiKeyQuery,
+  ): Promise<PaginatedSpaceApiKeys>;
 }

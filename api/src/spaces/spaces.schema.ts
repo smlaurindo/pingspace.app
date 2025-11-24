@@ -114,6 +114,13 @@ export const spaceApiKeys = pgTable(
     })
       .onDelete("cascade")
       .onUpdate("no action"),
+    foreignKey({
+      name: "space_api_keys_fk_user",
+      columns: [table.createdBy],
+      foreignColumns: [users.id],
+    })
+      .onDelete("set null")
+      .onUpdate("no action"),
     index("space_api_keys_idx_fk_space").on(table.spaceId),
   ],
 );

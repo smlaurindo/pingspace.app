@@ -39,3 +39,30 @@ export type SpaceApiKey = {
   createdAt: string;
   lastUsedAt: string | null;
 };
+
+export type ListSpaceApiKeyQuery = {
+  spaceId: string;
+  cursor?: string;
+  limit: number;
+  type: "ACTIVE" | "INACTIVE";
+};
+
+export type PaginatedSpaceApiKeys = {
+  items: {
+    id: string;
+    name: string;
+    description: string | null;
+    status: "ACTIVE" | "INACTIVE";
+    createdAt: string;
+    lastUsedAt: string | null;
+    createdBy: {
+      id: string;
+      nickname: string;
+    } | null;
+  }[];
+  pagination: {
+    nextCursor: string | null;
+    hasNextPage: boolean;
+    limit: number;
+  };
+};

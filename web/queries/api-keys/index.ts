@@ -1,7 +1,11 @@
 import type { CreateApiKeyRequest } from "@/@types/api-keys";
 import { createApiKey } from "@/api/create-api-key";
 import { listApiKeys } from "@/api/list-api-keys";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 export function useCreateApiKeyMutation(spaceId: string) {
   const queryClient = useQueryClient();
@@ -14,9 +18,15 @@ export function useCreateApiKeyMutation(spaceId: string) {
   });
 }
 
-export function useListApiKeysQuery(spaceId: string) {
-  return useQuery({
+export function useListApiKeysInfiniteQuery(
+  spaceId: string,
+  limit: number = 20
+) {
+  return useInfiniteQuery({
     queryKey: ["api-keys", spaceId],
-    queryFn: () => listApiKeys(spaceId),
+    queryFn: ({ pageParam }) =>
+      listApiKeys(spaceId, { cursor: pageParam, limit, type: "ACTIVE" }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.pagination.nextCursor ?? undefined,
   });
 }

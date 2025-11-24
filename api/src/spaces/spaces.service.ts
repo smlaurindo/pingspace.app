@@ -17,7 +17,10 @@ import type {
   CreateSpaceRequest,
   CreateSpaceResponse,
   DeleteSpaceRequest,
+  ListSpaceApiKeysRequest,
+  ListSpaceApiKeysResponse,
 } from "./types/spaces.dto";
+import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 
 @Injectable()
 export class SpacesService {
@@ -151,5 +154,47 @@ export class SpacesService {
       key: `${apiKey.id}.${rawSecret}`,
       createdAt: apiKey.createdAt,
     };
+  }
+
+  @Transactional<TransactionalAdapterDrizzleORM>({ accessMode: "read only" })
+  async listApiKeys(
+    request: ListSpaceApiKeysRequest,
+  ): Promise<ListSpaceApiKeysResponse> {
+    const { spaceId, userId, cursor, limit, type } = request;
+
+    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+
+    if (!spaceExists) throw new SpaceNotFoundException(spaceId);
+
+    const spaceMembership =
+      await this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId);
+
+    if (!spaceMembership) {
+      throw new UnauthorizedSpaceAccessException(
+        spaceId,
+        "You must be a member of the space to list API keys.",
+      );
+    }
+
+    const canList = [SPACE_ROLE_OWNER, SPACE_ROLE_ADMIN].includes(
+      spaceMembership.role,
+    );
+
+    if (!canList) {
+      throw new InsufficientSpacePermissionsException(
+        spaceId,
+        ["OWNER", "ADMIN"],
+        "list API keys.",
+      );
+    }
+
+    const result = await this.spaceApiKeyRepository.listBySpace({
+      spaceId,
+      cursor,
+      limit,
+      type,
+    });
+
+    return { ...result };
   }
 }

@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   Param,
   Post,
+  Query,
   Res,
   UseFilters,
 } from "@nestjs/common";
@@ -82,6 +84,18 @@ const createSpaceApiKeyValidationPipe = new ZodValidationPipe(
 
 type CreateSpaceApiKeyRequestBody = z.infer<typeof createSpaceApiKeySchema>;
 
+const listSpaceApiKeysQuerySchema = z.object({
+  cursor: z.string().optional(),
+  type: z.enum(["ACTIVE", "INACTIVE"]).optional().default("ACTIVE"),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+});
+
+const listSpaceApiKeysQueryValidationPipe = new ZodValidationPipe(
+  listSpaceApiKeysQuerySchema,
+);
+
+type ListSpaceApiKeysQuery = z.infer<typeof listSpaceApiKeysQuerySchema>;
+
 @Controller()
 @UseFilters(new SpacesExceptionFilter())
 export class SpacesController {
@@ -126,7 +140,7 @@ export class SpacesController {
     reply.status(HttpStatus.NO_CONTENT).send();
   }
 
-  @Post("/v1/spaces/:spaceId/api-key")
+  @Post("/v1/spaces/:spaceId/api-keys")
   async createSpaceApiKey(
     @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
     @Body(createSpaceApiKeyValidationPipe) body: CreateSpaceApiKeyRequestBody,
@@ -144,5 +158,26 @@ export class SpacesController {
     });
 
     return reply.status(HttpStatus.CREATED).send(apiKey);
+  }
+
+  @Get("/v1/spaces/:spaceId/api-keys")
+  async listSpaceApiKeys(
+    @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
+    @Query(listSpaceApiKeysQueryValidationPipe) query: ListSpaceApiKeysQuery,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { sub } = jwt;
+    const { cursor, limit, type } = query;
+
+    const result = await this.spacesService.listApiKeys({
+      spaceId,
+      userId: sub,
+      cursor,
+      limit,
+      type,
+    });
+
+    return reply.status(HttpStatus.OK).send(result);
   }
 }
