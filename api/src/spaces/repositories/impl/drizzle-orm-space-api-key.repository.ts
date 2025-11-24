@@ -73,7 +73,7 @@ export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
   async updateLastUsed(spaceApiKeyId: string): Promise<void> {
     await this.txHost.tx
       .update(spaceApiKeys)
-      .set({ lastUsedAt: new Date().toISOString() })
+      .set({ lastUsedAt: new Date() })
       .where(eq(spaceApiKeys.id, spaceApiKeyId));
   }
 
@@ -89,7 +89,7 @@ export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
     ];
 
     if (cursor) {
-      conditions.push(lt(spaceApiKeys.createdAt, cursor));
+      conditions.push(lt(spaceApiKeys.createdAt, new Date(cursor)));
     }
 
     const items = await this.txHost.tx
@@ -114,7 +114,7 @@ export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
     const hasNextPage = items.length > limit;
     const results = hasNextPage ? items.slice(0, limit) : items;
     const nextCursor = hasNextPage
-      ? results[results.length - 1].createdAt
+      ? results[results.length - 1].createdAt.toISOString()
       : null;
 
     return {

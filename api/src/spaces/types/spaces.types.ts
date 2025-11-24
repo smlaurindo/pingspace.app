@@ -36,8 +36,8 @@ export type SpaceApiKey = {
   description: string | null;
   status: "ACTIVE" | "INACTIVE";
   createdBy: string;
-  createdAt: string;
-  lastUsedAt: string | null;
+  createdAt: Date;
+  lastUsedAt: Date | null;
 };
 
 export type ListSpaceApiKeyQuery = {
@@ -53,8 +53,8 @@ export type PaginatedSpaceApiKeys = {
     name: string;
     description: string | null;
     status: "ACTIVE" | "INACTIVE";
-    createdAt: string;
-    lastUsedAt: string | null;
+    createdAt: Date;
+    lastUsedAt: Date | null;
     createdBy: {
       id: string;
       nickname: string;

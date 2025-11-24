@@ -100,10 +100,8 @@ export const spaceApiKeys = pgTable(
     createdBy: text("created_by")
       .notNull()
       .references(() => users.id),
-    createdAt: timestamp("created_at", { mode: "string" })
-      .notNull()
-      .defaultNow(),
-    lastUsedAt: timestamp("last_used_at", { mode: "string" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    lastUsedAt: timestamp("last_used_at"),
   },
   (table) => [
     primaryKey({ name: "space_api_keys_pk_id", columns: [table.id] }),
@@ -113,13 +111,6 @@ export const spaceApiKeys = pgTable(
       foreignColumns: [spaces.id],
     })
       .onDelete("cascade")
-      .onUpdate("no action"),
-    foreignKey({
-      name: "space_api_keys_fk_user",
-      columns: [table.createdBy],
-      foreignColumns: [users.id],
-    })
-      .onDelete("set null")
       .onUpdate("no action"),
     index("space_api_keys_idx_fk_space").on(table.spaceId),
   ],

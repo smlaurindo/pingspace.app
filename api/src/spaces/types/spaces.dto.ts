@@ -27,7 +27,7 @@ export type CreateSpaceApiKeyResponse = {
   name: string;
   description: string | null;
   key: string;
-  createdAt: string;
+  createdAt: Date;
 };
 
 export type ListSpaceApiKeysRequest = {
@@ -44,8 +44,8 @@ export type ListSpaceApiKeysResponse = {
     name: string;
     description: string | null;
     status: "ACTIVE" | "INACTIVE";
-    createdAt: string;
-    lastUsedAt: string | null;
+    createdAt: Date;
+    lastUsedAt: Date | null;
     createdBy: {
       id: string;
       nickname: string;
