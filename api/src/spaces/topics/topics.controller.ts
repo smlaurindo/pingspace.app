@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   Param,
   Post,
@@ -13,9 +14,9 @@ import type { FastifyReply } from "fastify";
 import type { UserPayload } from "@/@types/user-jwt-payload";
 import { ZodValidationPipe } from "@/shared/pipes/zod-validation.pipe";
 import { AuthenticationPrincipal } from "@/shared/decorators/authentication-principal.decorator";
+import { ZodCUIDParameterValidationPipe } from "@/shared/pipes/zod-cuid-validation.pipe";
 import { TopicsService } from "./topics.service";
 import { TopicsExceptionFilter } from "./topics.filter";
-import { ZodCUIDParameterValidationPipe } from "@/shared/pipes/zod-cuid-validation.pipe";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -92,6 +93,24 @@ export class TopicsController {
       .status(HttpStatus.CREATED)
       .header("Location", `/v1/spaces/${spaceId}/topics/${topicId}`)
       .send({ topicId });
+  }
+
+  @Get("/v1/spaces/:spaceId/topics/:topicId")
+  async getTopic(
+    @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
+    @Param("topicId", ZodCUIDParameterValidationPipe) topicId: string,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { sub } = jwt;
+
+    const topic = await this.topicsService.getTopic({
+      spaceId,
+      topicId,
+      userId: sub,
+    });
+
+    return reply.status(HttpStatus.OK).send(topic);
   }
 
   @Delete("/v1/spaces/:spaceId/topics/:topicId")

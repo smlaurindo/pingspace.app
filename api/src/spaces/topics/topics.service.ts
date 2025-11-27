@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Transactional } from "@nestjs-cls/transactional";
+import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { SpaceRepository } from "../repositories/space.repository";
 import { SpaceNotFoundException } from "../exceptions/space-not-found.exception";
 import { SpaceMembershipRepository } from "../repositories/space-membership.repository";
@@ -12,6 +13,8 @@ import type {
   CreateTopicRequest,
   CreateTopicResponse,
   DeleteTopicRequest,
+  GetTopicRequest,
+  GetTopicResponse,
 } from "./types/topics.dto";
 import { TopicNotFoundException } from "../exceptions/topic-not-found.exception";
 
@@ -93,6 +96,37 @@ export class TopicsService {
     });
 
     return { topicId };
+  }
+
+  @Transactional<TransactionalAdapterDrizzleORM>({ accessMode: "read only" })
+  async getTopic(request: GetTopicRequest): Promise<GetTopicResponse> {
+    const { spaceId, topicId, userId } = request;
+
+    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+
+    if (!spaceExists) {
+      throw new SpaceNotFoundException(spaceId);
+    }
+
+    const spaceMember = await this.spaceMembershipRepository.findBySpaceAndUser(
+      spaceId,
+      userId,
+    );
+
+    if (!spaceMember) {
+      throw new UnauthorizedSpaceAccessException(
+        spaceId,
+        "You must be a member of the space to view topics.",
+      );
+    }
+
+    const topic = await this.topicRepository.findBySpaceAndId(spaceId, topicId);
+
+    if (!topic) {
+      throw new TopicNotFoundException(topicId);
+    }
+
+    return topic;
   }
 
   @Transactional()

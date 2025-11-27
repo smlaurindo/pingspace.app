@@ -4,10 +4,7 @@ import { TransactionHost } from "@nestjs-cls/transactional";
 import { topics } from "@/spaces/topics/topics.schema";
 import { and, eq } from "drizzle-orm";
 import { TopicRepository } from "../topic.repository";
-import type {
-  CreateTopicData,
-  TopicInfo,
-} from "@/spaces/topics/types/topics.types";
+import { CreateTopicData, TopicInfo } from "../../types/topics.types";
 
 @Injectable()
 export class DrizzleORMTopicRepository implements TopicRepository {
@@ -68,6 +65,33 @@ export class DrizzleORMTopicRepository implements TopicRepository {
       })
       .from(topics)
       .where(eq(topics.slug, slug))
+      .limit(1);
+
+    if (!topic) {
+      return null;
+    }
+
+    return topic;
+  }
+
+  async findBySpaceAndId(
+    spaceId: string,
+    topicId: string,
+  ): Promise<TopicInfo | null> {
+    const [topic] = await this.txHost.tx
+      .select({
+        id: topics.id,
+        spaceId: topics.spaceId,
+        name: topics.name,
+        slug: topics.slug,
+        emoji: topics.emoji,
+        shortDescription: topics.shortDescription,
+        description: topics.description,
+        createdAt: topics.createdAt,
+        updatedAt: topics.updatedAt,
+      })
+      .from(topics)
+      .where(and(eq(topics.spaceId, spaceId), eq(topics.id, topicId)))
       .limit(1);
 
     if (!topic) {

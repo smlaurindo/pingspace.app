@@ -20,6 +20,17 @@ export abstract class TopicRepository {
   ): Promise<TopicInfo | null>;
 
   /**
+   * Find a topic by space ID and ID
+   * @param spaceId - The space identifier
+   * @param topicId - The topic identifier
+   * @returns The topic info or null if not found
+   */
+  abstract findBySpaceAndId(
+    spaceId: string,
+    topicId: string,
+  ): Promise<TopicInfo | null>;
+
+  /**
    * Check if a topic exists by space ID and slug
    * @param spaceId - The space identifier
    * @param slug - The topic slug
