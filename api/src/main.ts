@@ -20,7 +20,11 @@ async function bootstrap() {
 
   const { CORS_ORIGIN, PORT } = process.env;
 
-  app.enableCors({ origin: CORS_ORIGIN, credentials: true });
+  app.enableCors({
+    origin: CORS_ORIGIN,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  });
 
   await app.register(fastifyCookie);
 
