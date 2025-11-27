@@ -5,11 +5,11 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
-import { TopicNotFoundException } from "./exceptions/topic-not-found.exception";
+import { TopicSlugNotFoundException } from "../../exceptions/topic-slug-not-found.exception";
 
-type PingException = TopicNotFoundException;
+type PingException = TopicSlugNotFoundException;
 
-@Catch(TopicNotFoundException)
+@Catch(TopicSlugNotFoundException)
 export class PingsExceptionFilter implements ExceptionFilter {
   catch(exception: PingException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -17,7 +17,7 @@ export class PingsExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
 
-    if (exception instanceof TopicNotFoundException) {
+    if (exception instanceof TopicSlugNotFoundException) {
       status = HttpStatus.NOT_FOUND;
     }
 

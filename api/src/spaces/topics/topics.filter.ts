@@ -8,16 +8,22 @@ import type { FastifyReply } from "fastify";
 import { TopicSlugAlreadyExistsException } from "./exceptions/topic-slug-already-exists.exception";
 import { SpaceNotFoundException } from "../exceptions/space-not-found.exception";
 import { UnauthorizedSpaceAccessException } from "../exceptions/unauthorized-space-access.exception";
+import { TopicSlugNotFoundException } from "../exceptions/topic-slug-not-found.exception";
+import { TopicNotFoundException } from "../exceptions/topic-not-found.exception";
 
 type TopicException =
   | TopicSlugAlreadyExistsException
   | SpaceNotFoundException
-  | UnauthorizedSpaceAccessException;
+  | UnauthorizedSpaceAccessException
+  | TopicSlugNotFoundException
+  | TopicNotFoundException;
 
 @Catch(
   TopicSlugAlreadyExistsException,
   SpaceNotFoundException,
   UnauthorizedSpaceAccessException,
+  TopicSlugNotFoundException,
+  TopicNotFoundException,
 )
 export class TopicsExceptionFilter implements ExceptionFilter {
   catch(exception: TopicException, host: ArgumentsHost) {
@@ -28,7 +34,11 @@ export class TopicsExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof TopicSlugAlreadyExistsException) {
       status = HttpStatus.CONFLICT;
-    } else if (exception instanceof SpaceNotFoundException) {
+    } else if (
+      exception instanceof SpaceNotFoundException ||
+      exception instanceof TopicSlugNotFoundException ||
+      exception instanceof TopicNotFoundException
+    ) {
       status = HttpStatus.NOT_FOUND;
     } else if (exception instanceof UnauthorizedSpaceAccessException) {
       status = HttpStatus.FORBIDDEN;

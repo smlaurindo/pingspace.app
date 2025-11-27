@@ -1,7 +1,7 @@
 import { BaseException } from "@/shared/exceptions/base-exception";
 
-export class TopicNotFoundException extends BaseException {
-  public override code: string = "TOPIC_NOT_FOUND";
+export class TopicSlugNotFoundException extends BaseException {
+  public override code: string = "TOPIC_SLUG_NOT_FOUND";
   public override message: string;
   public override details: string =
     "The topic you are trying to send a ping to does not exist. Please check the topic slug and try again.";

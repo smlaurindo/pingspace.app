@@ -11,7 +11,9 @@ import { TopicRepository } from "./repositories/topic.repository";
 import type {
   CreateTopicRequest,
   CreateTopicResponse,
+  DeleteTopicRequest,
 } from "./types/topics.dto";
+import { TopicNotFoundException } from "../exceptions/topic-not-found.exception";
 
 @Injectable()
 export class TopicsService {
@@ -91,5 +93,49 @@ export class TopicsService {
     });
 
     return { topicId };
+  }
+
+  @Transactional()
+  async deleteTopic(request: DeleteTopicRequest): Promise<void> {
+    const { spaceId, topicId, userId } = request;
+
+    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+
+    if (!spaceExists) {
+      throw new SpaceNotFoundException(spaceId);
+    }
+
+    const spaceMembership =
+      await this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId);
+
+    if (!spaceMembership) {
+      throw new UnauthorizedSpaceAccessException(
+        spaceId,
+        "You must be a member of the space to delete topics.",
+      );
+    }
+
+    const isSpaceMembershipAllowedToDeleteTopics =
+      spaceMembership.role === SPACE_ROLE_OWNER ||
+      spaceMembership.role === SPACE_ROLE_ADMIN;
+
+    if (!isSpaceMembershipAllowedToDeleteTopics) {
+      throw new InsufficientSpacePermissionsException(
+        spaceId,
+        ["OWNER", "ADMIN"],
+        "delete topics.",
+      );
+    }
+
+    const topicExists = await this.topicRepository.existsBySpaceAndId(
+      spaceId,
+      topicId,
+    );
+
+    if (!topicExists) {
+      throw new TopicNotFoundException(topicId);
+    }
+
+    await this.topicRepository.deleteById(topicId);
   }
 }

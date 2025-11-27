@@ -86,4 +86,18 @@ export class DrizzleORMTopicRepository implements TopicRepository {
 
     return !!result;
   }
+
+  async existsBySpaceAndId(spaceId: string, topicId: string): Promise<boolean> {
+    const [result] = await this.txHost.tx
+      .select({ id: topics.id })
+      .from(topics)
+      .where(and(eq(topics.spaceId, spaceId), eq(topics.id, topicId)))
+      .limit(1);
+
+    return !!result;
+  }
+
+  async deleteById(topicId: string): Promise<void> {
+    await this.txHost.tx.delete(topics).where(eq(topics.id, topicId));
+  }
 }

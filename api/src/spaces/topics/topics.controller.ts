@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpStatus,
   Param,
   Post,
@@ -14,6 +15,7 @@ import { ZodValidationPipe } from "@/shared/pipes/zod-validation.pipe";
 import { AuthenticationPrincipal } from "@/shared/decorators/authentication-principal.decorator";
 import { TopicsService } from "./topics.service";
 import { TopicsExceptionFilter } from "./topics.filter";
+import { ZodCUIDParameterValidationPipe } from "@/shared/pipes/zod-cuid-validation.pipe";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -90,5 +92,23 @@ export class TopicsController {
       .status(HttpStatus.CREATED)
       .header("Location", `/v1/spaces/${spaceId}/topics/${topicId}`)
       .send({ topicId });
+  }
+
+  @Delete("/v1/spaces/:spaceId/topics/:topicId")
+  async deleteTopic(
+    @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
+    @Param("topicId", ZodCUIDParameterValidationPipe) topicId: string,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { sub } = jwt;
+
+    await this.topicsService.deleteTopic({
+      spaceId,
+      topicId,
+      userId: sub,
+    });
+
+    reply.status(HttpStatus.NO_CONTENT).send();
   }
 }

@@ -11,3 +11,9 @@ export type CreateTopicRequest = {
 export type CreateTopicResponse = {
   topicId: string;
 };
+
+export type DeleteTopicRequest = {
+  spaceId: string;
+  topicId: string;
+  userId: string;
+};

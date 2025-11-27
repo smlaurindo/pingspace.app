@@ -4,7 +4,7 @@ import { SpaceApiKeyRepository } from "../../repositories/space-api-key.reposito
 import { TopicRepository } from "../repositories/topic.repository";
 import { PingRepository } from "./repositories/ping.repository";
 import { SpaceApiKeyNotFoundException } from "../../exceptions/space-api-key-not-found.exception";
-import { TopicNotFoundException } from "./exceptions/topic-not-found.exception";
+import { TopicSlugNotFoundException } from "../../exceptions/topic-slug-not-found.exception";
 import type { CreatePingRequest, CreatePingResponse } from "./types/pings.dto";
 
 @Injectable()
@@ -52,7 +52,7 @@ export class PingsService {
     );
 
     if (!topic) {
-      throw new TopicNotFoundException(topicSlug);
+      throw new TopicSlugNotFoundException(topicSlug);
     }
 
     const titleToUse = title ?? this.generateTitle(content, contentType);
