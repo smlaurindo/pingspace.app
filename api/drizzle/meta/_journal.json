@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1761420430320,
-      "tag": "0000_fantastic_riptide",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1763836165895,
-      "tag": "0001_clever_supreme_intelligence",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1763945693142,
-      "tag": "0002_overconfident_ultimo",
+      "when": 1764264126014,
+      "tag": "0000_worthless_thing",
       "breakpoints": true
     }
   ]

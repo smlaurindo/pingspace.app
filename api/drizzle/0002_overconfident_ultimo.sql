@@ -1,2 +1,0 @@
-ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_fk_user" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "space_api_keys_idx_fk_user" ON "space_api_keys" USING btree ("created_by");

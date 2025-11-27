@@ -26,9 +26,7 @@ export const pings = pgTable(
     topicId: text("topic_id")
       .notNull()
       .references(() => topics.id),
-    createdAt: timestamp("created_at", { mode: "string" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
     primaryKey({ name: "pings_pk_id", columns: [table.id] }),
@@ -66,9 +64,7 @@ export const pingActions = pgTable(
     pingId: text("ping_id")
       .notNull()
       .references(() => pings.id),
-    createdAt: timestamp("created_at", { mode: "string" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
     primaryKey({ name: "ping_actions_pk_id", columns: [table.id] }),
@@ -92,9 +88,7 @@ export const pingTags = pgTable(
     tagId: text("tag_id")
       .notNull()
       .references(() => topicTags.id),
-    createdAt: timestamp("created_at", { mode: "string" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
     primaryKey({

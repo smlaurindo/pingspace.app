@@ -32,6 +32,6 @@ export type GetTopicResponse = {
   emoji: string;
   shortDescription: string;
   description: string | null;
-  createdAt: string;
-  updatedAt: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
 };

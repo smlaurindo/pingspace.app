@@ -42,5 +42,5 @@ export type CreatePingResponse = {
     slug: string;
   };
   spaceId: string;
-  createdAt: string;
+  createdAt: Date;
 };

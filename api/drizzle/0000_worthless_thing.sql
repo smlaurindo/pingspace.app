@@ -1,3 +1,15 @@
+CREATE TYPE "public"."space_member_role" AS ENUM('OWNER', 'ADMIN', 'MEMBER');--> statement-breakpoint
+CREATE TABLE "users" (
+	"id" text NOT NULL,
+	"nickname" text NOT NULL,
+	"email" text NOT NULL,
+	"password_hash" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
+	CONSTRAINT "users_pk_id" PRIMARY KEY("id"),
+	CONSTRAINT "users_email_unique" UNIQUE("email")
+);
+--> statement-breakpoint
 CREATE TABLE "space_api_keys" (
 	"id" text NOT NULL,
 	"key_hash" text NOT NULL,
@@ -11,6 +23,27 @@ CREATE TABLE "space_api_keys" (
 	CONSTRAINT "space_api_keys_pk_id" PRIMARY KEY("id")
 );
 --> statement-breakpoint
+CREATE TABLE "space_members" (
+	"space_id" text NOT NULL,
+	"member_id" text NOT NULL,
+	"role" "space_member_role" DEFAULT 'MEMBER' NOT NULL,
+	"joined_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "space_members_pk_space_user" PRIMARY KEY("space_id","member_id")
+);
+--> statement-breakpoint
+CREATE TABLE "spaces" (
+	"id" text NOT NULL,
+	"name" text NOT NULL,
+	"slug" text NOT NULL,
+	"short_description" text NOT NULL,
+	"description" text,
+	"owner_id" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
+	CONSTRAINT "spaces_pk_id" PRIMARY KEY("id"),
+	CONSTRAINT "spaces_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
 CREATE TABLE "topic_tags" (
 	"id" text NOT NULL,
 	"name" text NOT NULL,
@@ -18,6 +51,19 @@ CREATE TABLE "topic_tags" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "topic_tags_pk_id" PRIMARY KEY("id"),
 	CONSTRAINT "topic_tags_unique_name_topic" UNIQUE("name","topic_id")
+);
+--> statement-breakpoint
+CREATE TABLE "topics" (
+	"id" text NOT NULL,
+	"space_id" text NOT NULL,
+	"name" text NOT NULL,
+	"emoji" text NOT NULL,
+	"slug" text NOT NULL,
+	"short_description" text NOT NULL,
+	"description" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
+	CONSTRAINT "topics_pk_id" PRIMARY KEY("id")
 );
 --> statement-breakpoint
 CREATE TABLE "ping_actions" (
@@ -52,24 +98,26 @@ CREATE TABLE "pings" (
 	CONSTRAINT "pings_pk_id" PRIMARY KEY("id")
 );
 --> statement-breakpoint
-ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_fk_space" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "topic_tags" ADD CONSTRAINT "topic_tags_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_fk_user" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "space_members" ADD CONSTRAINT "space_members_fk_space" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "space_members" ADD CONSTRAINT "space_members_fk_user" FOREIGN KEY ("member_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "spaces" ADD CONSTRAINT "spaces_fk_user" FOREIGN KEY ("owner_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "topic_tags" ADD CONSTRAINT "topic_tags_fk_topic" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "ping_actions" ADD CONSTRAINT "ping_actions_ping_id_pings_id_fk" FOREIGN KEY ("ping_id") REFERENCES "public"."pings"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "topics" ADD CONSTRAINT "topics_fk_space" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ping_actions" ADD CONSTRAINT "ping_actions_fk_ping" FOREIGN KEY ("ping_id") REFERENCES "public"."pings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pings_topic_tags" ADD CONSTRAINT "pings_topic_tags_ping_id_pings_id_fk" FOREIGN KEY ("ping_id") REFERENCES "public"."pings"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pings_topic_tags" ADD CONSTRAINT "pings_topic_tags_tag_id_topic_tags_id_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."topic_tags"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pings_topic_tags" ADD CONSTRAINT "pings_topic_tags_fk_ping" FOREIGN KEY ("ping_id") REFERENCES "public"."pings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pings_topic_tags" ADD CONSTRAINT "pings_topic_tags_fk_tag" FOREIGN KEY ("tag_id") REFERENCES "public"."topic_tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pings" ADD CONSTRAINT "pings_api_key_id_space_api_keys_id_fk" FOREIGN KEY ("api_key_id") REFERENCES "public"."space_api_keys"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pings" ADD CONSTRAINT "pings_topic_id_topics_id_fk" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pings" ADD CONSTRAINT "pings_fk_topic" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "pings" ADD CONSTRAINT "pings_fk_api_key" FOREIGN KEY ("api_key_id") REFERENCES "public"."space_api_keys"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "space_api_keys_idx_fk_space" ON "space_api_keys" USING btree ("space_id");--> statement-breakpoint
+CREATE INDEX "space_api_keys_idx_fk_user" ON "space_api_keys" USING btree ("created_by");--> statement-breakpoint
+CREATE INDEX "spaces_idx_fk_user" ON "spaces" USING btree ("owner_id");--> statement-breakpoint
+CREATE INDEX "spaces_idx_slug" ON "spaces" USING btree ("slug");--> statement-breakpoint
 CREATE INDEX "topic_tags_idx_fk_topic" ON "topic_tags" USING btree ("topic_id");--> statement-breakpoint
 CREATE INDEX "topic_tags_idx_name_fk_topic" ON "topic_tags" USING btree ("name","topic_id");--> statement-breakpoint
+CREATE INDEX "topics_idx_fk_space" ON "topics" USING btree ("space_id");--> statement-breakpoint
+CREATE INDEX "topics_idx_space_slug" ON "topics" USING btree ("space_id","slug");--> statement-breakpoint
 CREATE INDEX "ping_actions_idx_fk_ping" ON "ping_actions" USING btree ("ping_id");--> statement-breakpoint
 CREATE INDEX "pings_topic_tags_idx_fk_ping" ON "pings_topic_tags" USING btree ("ping_id");--> statement-breakpoint
 CREATE INDEX "pings_topic_tags_idx_fk_tag" ON "pings_topic_tags" USING btree ("tag_id");--> statement-breakpoint

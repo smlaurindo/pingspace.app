@@ -38,6 +38,6 @@ export type Ping = {
   }[];
   actions: (Action & { id: string })[];
   topicId: string;
-  createdAt: string;
-  updatedAt: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
 };
