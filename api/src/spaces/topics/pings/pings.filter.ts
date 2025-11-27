@@ -15,16 +15,17 @@ export class PingsExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const reply = ctx.getResponse<FastifyReply>();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
     if (exception instanceof TopicSlugNotFoundException) {
-      status = HttpStatus.NOT_FOUND;
+      statusCode = HttpStatus.NOT_FOUND;
     }
 
-    reply.status(status).send({
+    reply.status(statusCode).send({
       code: exception.code,
       message: exception.message,
-      statusCode: status,
+      details: exception.details,
+      statusCode,
     });
   }
 }

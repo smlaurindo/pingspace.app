@@ -44,6 +44,7 @@ export class SpacesExceptionFilter implements ExceptionFilter {
       code: exception.code,
       message: exception.message,
       details: exception.details,
+      statusCode,
     });
   }
 }

@@ -30,24 +30,25 @@ export class TopicsExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const reply = ctx.getResponse<FastifyReply>();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
 
     if (exception instanceof TopicSlugAlreadyExistsException) {
-      status = HttpStatus.CONFLICT;
+      statusCode = HttpStatus.CONFLICT;
     } else if (
       exception instanceof SpaceNotFoundException ||
       exception instanceof TopicSlugNotFoundException ||
       exception instanceof TopicNotFoundException
     ) {
-      status = HttpStatus.NOT_FOUND;
+      statusCode = HttpStatus.NOT_FOUND;
     } else if (exception instanceof UnauthorizedSpaceAccessException) {
-      status = HttpStatus.FORBIDDEN;
+      statusCode = HttpStatus.FORBIDDEN;
     }
 
-    reply.status(status).send({
+    reply.status(statusCode).send({
       code: exception.code,
       message: exception.message,
-      statusCode: status,
+      details: exception.details,
+      statusCode,
     });
   }
 }
