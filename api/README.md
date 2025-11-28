@@ -1,63 +1,65 @@
-# Rotas
+# Routes
 
-🟣 Endpoint para o Frontend
-🟪 Endpoint para consumir via API
+🟣 Endpoint for Frontend  
+🟪 Endpoint for API consumption
 
 ## Auth (/v1/auth)
 
-- 🟣 POST /v1/auth/sign-up (Registro)
+- 🟣 POST /v1/auth/sign-up (Register)
 - 🟣 POST /v1/auth/sign-in (Login)
 
 ## Spaces (/v1/spaces)
 
-### CRUD do Space
+### Space CRUD
 
-- 🟣 POST /v1/spaces (Cria space)
-- 🟣 PUT /v1/spaces/:spaceId (Edita space)
-- 🟣 DELETE /v1/spaces/:spaceId (Deleta Space)
+- [x] 🟣 POST /v1/spaces (Create space)
+- [ ] 🟣 PUT /v1/spaces (Edit space)
+- [x] 🟣 DELETE /v1/spaces/:spaceId (Delete space)
 
-### Gerenciamento da API Key do Space
+### Space API Keys Management
 
-- 🟣 POST /v1/spaces/:spaceId/api-key (Gera API Key)
-- 🟣 PUT /v1/spaces/:spaceId/api-key (Edita permissões da API Key)
-- 🟣 DELETE /spaces/:spaceId/api-key/:apiKeyId (Remove a API Key)
+- [x] 🟣 POST /v1/spaces/:spaceId/api-keys (Generate API Key)
+- [x] 🟣 GET /v1/spaces/:spaceId/api-keys?cursor&type&limit (Paginate API Keys)
+- [ ] 🟣 PUT /v1/spaces/:spaceId/api-key (Edit API Key permissions)
+- [ ] 🟣 DELETE /spaces/:spaceId/api-key/:apiKeyId (Remove API Key)
 
-### Gerencia tópicos do Space
+### Space Topics Management
 
-- 🟣 POST /v1/spaces/:spaceId/topics (Cria Tópico)
-- 🟣 GET /v1/spaces/:spaceId/topics (Lista tópicos do space)
-- 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/subscribe (Se inscreve no tópico para receber mensagens e/ou notificações)
-- 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/unsubscribe (Remove a inscrição do tópico para não receber mensagens e/ou notificações)
-- 🟣 PUT /v1/spaces/:spaceId/topics/:topicId (Edita informações do tópico)
-- 🟣 DELETE /v1/spaces/:spaceId/topics/:topicId (Deleta o tópico)
+- [x] 🟣 POST /v1/spaces/:spaceId/topics (Create topic)
+- [ ] 🟣 GET /v1/spaces/:spaceId/topics (List space topics)
+- [x] 🟣 GET /v1/spaces/:spaceId/topics/:topicId (Get topic info)
+- [ ] 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/subscribe (Subscribe to topic for messages/notifications)
+- [ ] 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/unsubscribe (Unsubscribe from topic to stop receiving messages/notifications)
+- [ ] 🟣 PUT /v1/spaces/:spaceId/topics (Edit topic info)
+- [x] 🟣 DELETE /v1/spaces/:spaceId/topics/:topicId (Delete topic)
 
-- 🟪 GET /v1/topics (Lista tópicos do space)
-- 🟪 POST /v1/topics (Cria Tópico)
+- [ ] 🟪 GET /v1/topics (List space topics)
+- [ ] 🟪 POST /v1/topics (Create topic)
 
-#### Gerencia mensagens de um tópico do Space
+#### Manage messages of a space topic
 
-- 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings?limit&page (Página as mensagens de um tópico do Space)
-- 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/:pingId/reads (Visualiza membros que visualizaram a mensagem)
-- 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/:pingId/notified (Visualiza membros que foram notificados da mensagem)
-- 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/stream (Abre stream SSE pra receber mensagens)
-- 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/pings/read (Visualiza Mensagens de um tópico)
-- 🟣 POST /v1/spaces/:spaceId/topics/:topicId/webhook (Cria um webhook para escutar eventos do tópico)
+- [ ] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings?limit&page (Paginate messages of a space topic)
+- [ ] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/:pingId/reads (View members who read the message)
+- [ ] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/:pingId/notified (View members who were notified of the message)
+- [ ] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/stream (Open SSE stream to receive messages)
+- [ ] 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/pings/read (Mark topic messages as read)
+- [ ] 🟣 POST /v1/spaces/:spaceId/topics/:topicId/webhook (Create webhook to listen for topic events)
 
-- 🟪 GET /v1/topics/:topicSlug/pings?limit&page (Página as mensagens de um tópico do Space)
-- 🟪 GET /v1/topics/:topicSlug/pings/sse (Abre stream SSE pra receber mensagens)
-- 🟪 POST /v1/topics/:topicSlug/pings (Cria uma mensagem no tópico)
+- [ ] 🟪 GET /v1/topics/:topicSlug/pings?limit&page (Paginate messages of a space topic)
+- [ ] 🟪 GET /v1/topics/:topicSlug/pings/sse (Open SSE stream to receive messages)
+- [x] 🟪 POST /v1/topics/:topicSlug/pings (Create message in topic)
 
-### Gerenciamento de membros do Space
+### Space Members Management
 
-- 🟣 GET /v1/spaces/:spaceId/members (Lista membros do space)
-- 🟣 GET /v1/spaces/:spaceId/members/:memberId/details (Visualiza detalhes do membro)
-- 🟣 POST /v1/spaces/:spaceId/members (Convida membro pro space)
-- 🟣 PUT /v1/spaces/:spaceId/members/:memberId (Gerencia membro do space)
-- 🟣 DELETE /v1/spaces/:spaceId/members/:memberId (Expulsa membro do space)
+- [ ] 🟣 GET /v1/spaces/:spaceId/members (List space members)
+- [ ] 🟣 GET /v1/spaces/:spaceId/members/:memberId/details (View member details)
+- [ ] 🟣 POST /v1/spaces/:spaceId/members (Invite member to space)
+- [ ] 🟣 PUT /v1/spaces/:spaceId/members/:memberId (Manage space member)
+- [ ] 🟣 DELETE /v1/spaces/:spaceId/members/:memberId (Remove member from space)
 
-## Ações do usuário
+## User Actions
 
-- 🟣 GET /me/topics (Lista os tópicos em que o usuário está inscrito)
-- 🟣 GET /me/spaces (Lista os spaces em que o usuário é membro)
-- 🟣 PUT /me (Altera informações do usuário)
-- 🟣 DELETE /me/delete (Deleta a conta)
+- [ ] 🟣 GET /me/topics (List topics the user is subscribed to)
+- [ ] 🟣 GET /me/spaces (List spaces the user is a member of)
+- [ ] 🟣 PUT /me (Update user information)
+- [ ] 🟣 DELETE /me/delete (Delete account)
