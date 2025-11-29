@@ -44,3 +44,32 @@ export type CreatePingResponse = {
   spaceId: string;
   createdAt: Date;
 };
+
+export type ListPingsRequest = {
+  spaceId: string;
+  topicId: string;
+  userId: string;
+  cursor?: string;
+  limit: number;
+};
+
+export type ListPingsResponse = {
+  items: {
+    id: string;
+    title: string;
+    contentType: PingContentType;
+    content: string;
+    tags: {
+      id: string;
+      name: string;
+    }[];
+    actions: (Action & { id: string })[];
+    createdAt: Date;
+    updatedAt: Date | null;
+  }[];
+  pagination: {
+    nextCursor: string | null;
+    hasMore: boolean;
+    limit: number;
+  };
+};

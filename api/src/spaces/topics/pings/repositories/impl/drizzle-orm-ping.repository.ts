@@ -2,10 +2,15 @@ import { Injectable } from "@nestjs/common";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { TransactionHost } from "@nestjs-cls/transactional";
 import { PingRepository } from "../ping.repository";
-import { CreatePingData, Ping } from "../../types/pings.types";
+import {
+  CreatePingData,
+  ListPingQuery,
+  PaginatedPings,
+  Ping,
+} from "../../types/pings.types";
 import { pingActions, pings, pingTags } from "../../pings.schema";
-import { and, eq } from "drizzle-orm";
-import { topicTags } from "@/spaces/topics/topics.schema";
+import { topicTags } from "../../../topics.schema";
+import { and, desc, eq, inArray, lt } from "drizzle-orm";
 
 @Injectable()
 export class DrizzleORMPingRepository implements PingRepository {
@@ -131,6 +136,111 @@ export class DrizzleORMPingRepository implements PingRepository {
       tags,
       createdAt: ping.createdAt,
       updatedAt: null,
+    };
+  }
+
+  async listByTopic({
+    topicId,
+    cursor,
+    limit,
+  }: ListPingQuery): Promise<PaginatedPings> {
+    const results = await this.txHost.tx
+      .select({
+        id: pings.id,
+        title: pings.title,
+        contentType: pings.contentType,
+        content: pings.content,
+        createdAt: pings.createdAt,
+        updatedAt: pings.updatedAt,
+      })
+      .from(pings)
+      .where(
+        and(
+          eq(pings.topicId, topicId),
+          cursor ? lt(pings.createdAt, new Date(cursor)) : undefined,
+        ),
+      )
+      .orderBy(desc(pings.createdAt))
+      .limit(limit + 1);
+
+    const hasMore = results.length > limit;
+
+    const data = hasMore ? results.slice(0, limit) : results;
+
+    const nextCursor =
+      hasMore && data.length > 0
+        ? data[data.length - 1].createdAt.toISOString()
+        : null;
+
+    if (data.length === 0) {
+      return {
+        items: [],
+        pagination: { hasMore, nextCursor, limit },
+      };
+    }
+
+    const pingIds = data.map((ping) => ping.id);
+
+    const [actions, tags] = await Promise.all([
+      this.txHost.tx
+        .select({
+          id: pingActions.id,
+          type: pingActions.type,
+          label: pingActions.label,
+          url: pingActions.url,
+          method: pingActions.method,
+          headers: pingActions.headers,
+          body: pingActions.body,
+          pingId: pingActions.pingId,
+        })
+        .from(pingActions)
+        .where(inArray(pingActions.pingId, pingIds)),
+      this.txHost.tx
+        .select({
+          pingId: pingTags.pingId,
+          id: topicTags.id,
+          name: topicTags.name,
+        })
+        .from(pingTags)
+        .innerJoin(topicTags, eq(pingTags.tagId, topicTags.id))
+        .where(inArray(pingTags.pingId, pingIds)),
+    ]);
+
+    return {
+      items: data.map((ping) => ({
+        ...ping,
+        actions: actions
+          .filter((action) => action.pingId === ping.id)
+          .map((action) => {
+            switch (action.type) {
+              case "LINK":
+                return {
+                  id: action.id,
+                  type: "LINK" as const,
+                  label: action.label,
+                  url: action.url,
+                };
+              case "HTTP":
+                return {
+                  id: action.id,
+                  type: "HTTP" as const,
+                  label: action.label,
+                  url: action.url,
+                  method: action.method!,
+                  headers: action.headers ?? undefined,
+                  body: action.body ?? undefined,
+                };
+            }
+          }),
+        tags: tags
+          .filter((tag) => tag.pingId === ping.id)
+          .map(({ id, name }) => ({ id, name })),
+      })),
+      pagination: {
+        hasMore,
+        nextCursor,
+        limit,
+      },
     };
   }
 }

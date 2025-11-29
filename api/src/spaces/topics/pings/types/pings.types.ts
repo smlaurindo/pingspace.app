@@ -41,3 +41,18 @@ export type Ping = {
   createdAt: Date;
   updatedAt: Date | null;
 };
+
+export type ListPingQuery = {
+  topicId: string;
+  cursor?: string;
+  limit: number;
+};
+
+export type PaginatedPings = {
+  items: Omit<Ping, "topicId">[];
+  pagination: {
+    nextCursor: string | null;
+    hasMore: boolean;
+    limit: number;
+  };
+};

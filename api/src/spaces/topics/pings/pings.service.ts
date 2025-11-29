@@ -5,11 +5,24 @@ import { TopicRepository } from "../repositories/topic.repository";
 import { PingRepository } from "./repositories/ping.repository";
 import { SpaceApiKeyNotFoundException } from "../../exceptions/space-api-key-not-found.exception";
 import { TopicSlugNotFoundException } from "../../exceptions/topic-slug-not-found.exception";
-import type { CreatePingRequest, CreatePingResponse } from "./types/pings.dto";
+import type {
+  CreatePingRequest,
+  CreatePingResponse,
+  ListPingsRequest,
+  ListPingsResponse,
+} from "./types/pings.dto";
+import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
+import { SpaceRepository } from "../../repositories/space.repository";
+import { SpaceMembershipRepository } from "../../repositories/space-membership.repository";
+import { SpaceNotFoundException } from "../../exceptions/space-not-found.exception";
+import { UnauthorizedSpaceAccessException } from "../../exceptions/unauthorized-space-access.exception";
+import { TopicNotFoundException } from "../../exceptions/topic-not-found.exception";
 
 @Injectable()
 export class PingsService {
   public constructor(
+    private readonly spaceRepository: SpaceRepository,
+    private readonly spaceMembershipRepository: SpaceMembershipRepository,
     private readonly spaceApiKeyRepository: SpaceApiKeyRepository,
     private readonly topicRepository: TopicRepository,
     private readonly pingRepository: PingRepository,
@@ -83,5 +96,36 @@ export class PingsService {
       topic,
       spaceId: apiKey.spaceId,
     };
+  }
+
+  @Transactional<TransactionalAdapterDrizzleORM>({ accessMode: "read only" })
+  async listPings(request: ListPingsRequest): Promise<ListPingsResponse> {
+    const { spaceId, topicId, userId, cursor, limit } = request;
+
+    const [spaceExists, spaceMembership, topicExistsAndBelongsToSpace] =
+      await Promise.all([
+        this.spaceRepository.checkSpaceExists(spaceId),
+        this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+        this.topicRepository.existsBySpaceAndId(spaceId, topicId),
+      ]);
+
+    if (!spaceExists) throw new SpaceNotFoundException(spaceId);
+
+    if (!spaceMembership) {
+      throw new UnauthorizedSpaceAccessException(
+        spaceId,
+        "You must be a member of the space to list pings.",
+      );
+    }
+
+    if (!topicExistsAndBelongsToSpace) {
+      throw new TopicNotFoundException(topicId);
+    }
+
+    return await this.pingRepository.listByTopic({
+      topicId,
+      cursor,
+      limit,
+    });
   }
 }

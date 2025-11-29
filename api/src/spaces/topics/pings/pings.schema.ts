@@ -27,6 +27,7 @@ export const pings = pgTable(
       .notNull()
       .references(() => topics.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at"),
   },
   (table) => [
     primaryKey({ name: "pings_pk_id", columns: [table.id] }),

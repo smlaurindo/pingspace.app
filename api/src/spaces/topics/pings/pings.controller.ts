@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Param,
   Post,
+  Query,
   Res,
   UseFilters,
   UseGuards,
@@ -16,6 +18,8 @@ import { PingsExceptionFilter } from "./pings.filter";
 import { ApiKeyPrincipal } from "@/shared/decorators/api-key-principal.decorator";
 import { SpaceApiKeyGuard } from "../../guards/space-api-key.guard";
 import type { ApiKeyPayload } from "@/@types/api-key-payload";
+import type { UserPayload } from "@/@types/user-jwt-payload";
+import { AuthenticationPrincipal } from "@/shared/decorators/authentication-principal.decorator";
 
 const baseActionSchema = z.object({
   type: z.enum(["HTTP", "LINK"]),
@@ -89,14 +93,33 @@ const createPingParamsSchema = z.object({
   topicSlug: z.string().min(1, "Topic slug is required"),
 });
 
+const listPingsParamsSchema = z.object({
+  spaceId: z.cuid2("Invalid space ID format"),
+  topicId: z.cuid2("Invalid topic ID format"),
+});
+
+const listPingsQuerySchema = z.object({
+  cursor: z.coerce.date("Invalid cursor").optional(),
+  limit: z.coerce
+    .number("Limit must be a number")
+    .int()
+    .min(1, "Limit must be at least 1")
+    .max(100, "Limit must be at most 100")
+    .default(10),
+});
+
 const createPingBodyPipe = new ZodValidationPipe(createPingBodySchema);
 const createPingParamsPipe = new ZodValidationPipe(createPingParamsSchema);
+const listPingsParamsPipe = new ZodValidationPipe(listPingsParamsSchema);
+const listPingsQueryPipe = new ZodValidationPipe(listPingsQuerySchema);
 
 type CreatePingRequestParams = z.infer<typeof createPingParamsSchema>;
 type CreatePingRequestBody = z.infer<typeof createPingBodySchema>;
+type ListPingsRequestParams = z.infer<typeof listPingsParamsSchema>;
+type ListPingsRequestQuery = z.infer<typeof listPingsQuerySchema>;
 
 @Controller()
-@UseFilters(PingsExceptionFilter)
+@UseFilters(new PingsExceptionFilter())
 export class PingsController {
   constructor(private readonly pingsService: PingsService) {}
 
@@ -136,5 +159,27 @@ export class PingsController {
       spaceId: ping.spaceId,
       createdAt: ping.createdAt,
     });
+  }
+
+  @Get("/v1/spaces/:spaceId/topics/:topicId/pings")
+  async listPings(
+    @Param(listPingsParamsPipe) params: ListPingsRequestParams,
+    @Query(listPingsQueryPipe) query: ListPingsRequestQuery,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { spaceId, topicId } = params;
+    const { cursor, limit } = query;
+    const { sub } = jwt;
+
+    const pings = await this.pingsService.listPings({
+      spaceId,
+      topicId,
+      userId: sub,
+      cursor: cursor?.toISOString(),
+      limit,
+    });
+
+    return reply.status(HttpStatus.OK).send(pings);
   }
 }
