@@ -38,16 +38,27 @@ export class TopicsService {
       userId,
     } = request;
 
-    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+    // TODO: Ensure consistent slugification across the entire app
+    // TODO: Implement logic to ensure that slug generation retries until a unique slug is produced
+    const finalSlug =
+      slug ||
+      name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+    const [spaceExists, spaceMember, topicSlugAlreadyExists] =
+      await Promise.all([
+        this.spaceRepository.checkSpaceExists(spaceId),
+        this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+        this.topicRepository.existsBySpaceAndSlug(spaceId, finalSlug),
+      ]);
 
     if (!spaceExists) {
       throw new SpaceNotFoundException(spaceId);
     }
-
-    const spaceMember = await this.spaceMembershipRepository.findBySpaceAndUser(
-      spaceId,
-      userId,
-    );
 
     if (!spaceMember) {
       throw new UnauthorizedSpaceAccessException(
@@ -67,20 +78,6 @@ export class TopicsService {
         "create topics.",
       );
     }
-
-    // TODO: Ensure consistent slugification across the entire app
-    // TODO: Implement logic to ensure that slug generation retries until a unique slug is produced
-    const finalSlug =
-      slug ||
-      name
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-
-    const topicSlugAlreadyExists =
-      await this.topicRepository.existsBySpaceAndSlug(spaceId, finalSlug);
 
     if (topicSlugAlreadyExists) {
       throw new TopicSlugAlreadyExistsException(finalSlug);
@@ -102,16 +99,15 @@ export class TopicsService {
   async getTopic(request: GetTopicRequest): Promise<GetTopicResponse> {
     const { spaceId, topicId, userId } = request;
 
-    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+    const [spaceExists, spaceMember, topic] = await Promise.all([
+      this.spaceRepository.checkSpaceExists(spaceId),
+      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+      this.topicRepository.findBySpaceAndId(spaceId, topicId),
+    ]);
 
     if (!spaceExists) {
       throw new SpaceNotFoundException(spaceId);
     }
-
-    const spaceMember = await this.spaceMembershipRepository.findBySpaceAndUser(
-      spaceId,
-      userId,
-    );
 
     if (!spaceMember) {
       throw new UnauthorizedSpaceAccessException(
@@ -119,8 +115,6 @@ export class TopicsService {
         "You must be a member of the space to view topics.",
       );
     }
-
-    const topic = await this.topicRepository.findBySpaceAndId(spaceId, topicId);
 
     if (!topic) {
       throw new TopicNotFoundException(topicId);
@@ -133,14 +127,15 @@ export class TopicsService {
   async deleteTopic(request: DeleteTopicRequest): Promise<void> {
     const { spaceId, topicId, userId } = request;
 
-    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+    const [spaceExists, spaceMembership, topicExists] = await Promise.all([
+      this.spaceRepository.checkSpaceExists(spaceId),
+      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+      this.topicRepository.existsBySpaceAndId(spaceId, topicId),
+    ]);
 
     if (!spaceExists) {
       throw new SpaceNotFoundException(spaceId);
     }
-
-    const spaceMembership =
-      await this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId);
 
     if (!spaceMembership) {
       throw new UnauthorizedSpaceAccessException(
@@ -160,11 +155,6 @@ export class TopicsService {
         "delete topics.",
       );
     }
-
-    const topicExists = await this.topicRepository.existsBySpaceAndId(
-      spaceId,
-      topicId,
-    );
 
     if (!topicExists) {
       throw new TopicNotFoundException(topicId);
