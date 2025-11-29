@@ -72,16 +72,14 @@ export class SpacesService {
   async deleteSpace(request: DeleteSpaceRequest): Promise<void> {
     const { spaceId, userId } = request;
 
-    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+    const [spaceExists, spaceMember] = await Promise.all([
+      this.spaceRepository.checkSpaceExists(spaceId),
+      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+    ]);
 
     if (!spaceExists) {
       throw new SpaceNotFoundException(spaceId);
     }
-
-    const spaceMember = await this.spaceMembershipRepository.findBySpaceAndUser(
-      spaceId,
-      userId,
-    );
 
     if (!spaceMember) {
       throw new UnauthorizedSpaceAccessException(spaceId);
@@ -106,12 +104,12 @@ export class SpacesService {
   ): Promise<CreateSpaceApiKeyResponse> {
     const { spaceId, userId, name, description } = request;
 
-    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+    const [spaceExists, spaceMembership] = await Promise.all([
+      this.spaceRepository.checkSpaceExists(spaceId),
+      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+    ]);
 
     if (!spaceExists) throw new SpaceNotFoundException(spaceId);
-
-    const spaceMembership =
-      await this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId);
 
     if (!spaceMembership) {
       throw new UnauthorizedSpaceAccessException(
@@ -162,12 +160,18 @@ export class SpacesService {
   ): Promise<ListSpaceApiKeysResponse> {
     const { spaceId, userId, cursor, limit, type } = request;
 
-    const spaceExists = await this.spaceRepository.checkSpaceExists(spaceId);
+    const [spaceExists, spaceMembership, result] = await Promise.all([
+      this.spaceRepository.checkSpaceExists(spaceId),
+      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+      this.spaceApiKeyRepository.listBySpace({
+        spaceId,
+        cursor,
+        limit,
+        type,
+      }),
+    ]);
 
     if (!spaceExists) throw new SpaceNotFoundException(spaceId);
-
-    const spaceMembership =
-      await this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId);
 
     if (!spaceMembership) {
       throw new UnauthorizedSpaceAccessException(
@@ -188,13 +192,6 @@ export class SpacesService {
       );
     }
 
-    const result = await this.spaceApiKeyRepository.listBySpace({
-      spaceId,
-      cursor,
-      limit,
-      type,
-    });
-
-    return { ...result };
+    return result;
   }
 }
