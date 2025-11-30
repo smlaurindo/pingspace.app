@@ -38,14 +38,14 @@
 
 #### Manage messages of a space topic
 
-- [ ] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings?limit&page (Paginate messages of a space topic)
+- [x] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings?cursor&limit (Paginate messages of a space topic)
 - [ ] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/:pingId/reads (View members who read the message)
 - [ ] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/:pingId/notified (View members who were notified of the message)
 - [ ] 🟣 GET /v1/spaces/:spaceId/topics/:topicId/pings/stream (Open SSE stream to receive messages)
-- [ ] 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/pings/read (Mark topic messages as read)
+- [x] 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/pings/read (Mark topic messages as read)
 - [ ] 🟣 POST /v1/spaces/:spaceId/topics/:topicId/webhook (Create webhook to listen for topic events)
 
-- [ ] 🟪 GET /v1/topics/:topicSlug/pings?limit&page (Paginate messages of a space topic)
+- [ ] 🟪 GET /v1/topics/:topicSlug/pings?cursor&limit (Paginate messages of a space topic)
 - [ ] 🟪 GET /v1/topics/:topicSlug/pings/sse (Open SSE stream to receive messages)
 - [x] 🟪 POST /v1/topics/:topicSlug/pings (Create message in topic)
 
