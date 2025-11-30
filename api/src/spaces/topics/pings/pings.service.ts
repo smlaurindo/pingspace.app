@@ -10,6 +10,7 @@ import type {
   CreatePingResponse,
   ListPingsRequest,
   ListPingsResponse,
+  MarkPingsAsReadRequest,
 } from "./types/pings.dto";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { SpaceRepository } from "../../repositories/space.repository";
@@ -126,6 +127,37 @@ export class PingsService {
       topicId,
       cursor,
       limit,
+    });
+  }
+
+  @Transactional()
+  async markPingsAsRead(request: MarkPingsAsReadRequest): Promise<void> {
+    const { spaceId, topicId, userId, timestamp } = request;
+
+    const [spaceExists, spaceMembership, topicExistsAndBelongsToSpace] =
+      await Promise.all([
+        this.spaceRepository.checkSpaceExists(spaceId),
+        this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+        this.topicRepository.existsBySpaceAndId(spaceId, topicId),
+      ]);
+
+    if (!spaceExists) throw new SpaceNotFoundException(spaceId);
+
+    if (!spaceMembership) {
+      throw new UnauthorizedSpaceAccessException(
+        spaceId,
+        "You must be a member of the space to mark pings as read.",
+      );
+    }
+
+    if (!topicExistsAndBelongsToSpace) {
+      throw new TopicNotFoundException(topicId);
+    }
+
+    await this.pingRepository.readByTopic({
+      topicId,
+      spaceMemberId: spaceMembership.id,
+      timestamp,
     });
   }
 }

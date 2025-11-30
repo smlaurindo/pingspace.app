@@ -1,6 +1,6 @@
 {
-  "id": "0e4499e8-cfa5-4661-b502-446fc9d2146b",
-  "prevId": "56bd84be-5b7d-48af-a5ba-50aa7288911a",
+  "id": "6f0f93f0-8384-4147-a484-76788e737384",
+  "prevId": "37457c2a-6b56-426c-880f-ec8df80dbb99",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -233,6 +233,12 @@
       "name": "space_members",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "space_id": {
           "name": "space_id",
           "type": "text",
@@ -317,15 +323,23 @@
         }
       },
       "compositePrimaryKeys": {
-        "space_members_pk_space_user": {
-          "name": "space_members_pk_space_user",
+        "space_members_pk_id": {
+          "name": "space_members_pk_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "space_members_unique_space_user": {
+          "name": "space_members_unique_space_user",
+          "nullsNotDistinct": false,
           "columns": [
             "space_id",
             "member_id"
           ]
         }
       },
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -836,6 +850,144 @@
         }
       },
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ping_reads": {
+      "name": "ping_reads",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp (0) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "space_member_id": {
+          "name": "space_member_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ping_id": {
+          "name": "ping_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "ping_reads_idx_fk_ping": {
+          "name": "ping_reads_idx_fk_ping",
+          "columns": [
+            {
+              "expression": "ping_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ping_reads_idx_fk_space_member": {
+          "name": "ping_reads_idx_fk_space_member",
+          "columns": [
+            {
+              "expression": "space_member_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ping_reads_space_member_id_space_members_id_fk": {
+          "name": "ping_reads_space_member_id_space_members_id_fk",
+          "tableFrom": "ping_reads",
+          "tableTo": "space_members",
+          "columnsFrom": [
+            "space_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ping_reads_ping_id_pings_id_fk": {
+          "name": "ping_reads_ping_id_pings_id_fk",
+          "tableFrom": "ping_reads",
+          "tableTo": "pings",
+          "columnsFrom": [
+            "ping_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ping_reads_fk_ping": {
+          "name": "ping_reads_fk_ping",
+          "tableFrom": "ping_reads",
+          "tableTo": "pings",
+          "columnsFrom": [
+            "ping_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ping_reads_fk_space_member": {
+          "name": "ping_reads_fk_space_member",
+          "tableFrom": "ping_reads",
+          "tableTo": "space_members",
+          "columnsFrom": [
+            "space_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "ping_reads_pk_id": {
+          "name": "ping_reads_pk_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "ping_reads_unique_member_ping": {
+          "name": "ping_reads_unique_member_ping",
+          "nullsNotDistinct": false,
+          "columns": [
+            "space_member_id",
+            "ping_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

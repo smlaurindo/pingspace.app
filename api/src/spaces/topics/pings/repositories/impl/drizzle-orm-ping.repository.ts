@@ -7,10 +7,11 @@ import {
   ListPingQuery,
   PaginatedPings,
   Ping,
+  ReadByTopicData,
 } from "../../types/pings.types";
-import { pingActions, pings, pingTags } from "../../pings.schema";
+import { pingActions, pingReads, pings, pingTags } from "../../pings.schema";
 import { topicTags } from "../../../topics.schema";
-import { and, desc, eq, inArray, lt } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lt } from "drizzle-orm";
 
 @Injectable()
 export class DrizzleORMPingRepository implements PingRepository {
@@ -242,5 +243,37 @@ export class DrizzleORMPingRepository implements PingRepository {
         limit,
       },
     };
+  }
+
+  async readByTopic({
+    topicId,
+    spaceMemberId,
+    timestamp,
+  }: ReadByTopicData): Promise<void> {
+    const unreadPings = await this.txHost.tx
+      .select({
+        pingId: pings.id,
+      })
+      .from(pings)
+      .leftJoin(
+        pingReads,
+        and(
+          eq(pingReads.pingId, pings.id),
+          eq(pingReads.spaceMemberId, spaceMemberId),
+        ),
+      )
+      .where(and(eq(pings.topicId, topicId), isNull(pingReads.id)));
+
+    if (unreadPings.length === 0) {
+      return;
+    }
+
+    const values = unreadPings.map(({ pingId }) => ({
+      spaceMemberId,
+      pingId,
+      timestamp,
+    }));
+
+    await this.txHost.tx.insert(pingReads).values(values).onConflictDoNothing();
   }
 }

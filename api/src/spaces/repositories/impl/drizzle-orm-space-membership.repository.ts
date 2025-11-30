@@ -23,6 +23,7 @@ export class DrizzleORMRepositorySpaceMembership
   ): Promise<SpaceMembershipInfo | null> {
     const [membership] = await this.txHost.tx
       .select({
+        id: spaceMembers.id,
         role: spaceMembers.role,
         spaceId: spaceMembers.spaceId,
         memberId: spaceMembers.memberId,
@@ -41,6 +42,7 @@ export class DrizzleORMRepositorySpaceMembership
     }
 
     const membershipInfo: SpaceMembershipInfo = {
+      id: membership.id,
       role: membership.role,
       spaceId: membership.spaceId,
       memberId: membership.memberId,

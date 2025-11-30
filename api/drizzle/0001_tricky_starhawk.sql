@@ -1,1 +1,0 @@
-ALTER TABLE "pings" ADD COLUMN "updated_at" timestamp;

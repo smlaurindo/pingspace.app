@@ -73,3 +73,10 @@ export type ListPingsResponse = {
     limit: number;
   };
 };
+
+export type MarkPingsAsReadRequest = {
+  spaceId: string;
+  topicId: string;
+  userId: string;
+  timestamp: Date;
+};

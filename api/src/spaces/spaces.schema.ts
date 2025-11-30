@@ -8,6 +8,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const spaces = pgTable(
@@ -51,19 +52,22 @@ export const spaceMemberRole = pgEnum("space_member_role", [
 export const spaceMembers = pgTable(
   "space_members",
   {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .notNull(),
     spaceId: text("space_id")
       .references(() => spaces.id)
       .notNull(),
     memberId: text("member_id")
       .references(() => users.id)
       .notNull(),
-    role: spaceMemberRole("role").notNull().default("MEMBER"),
+    role: spaceMemberRole("role").notNull().default(SPACE_ROLE_MEMBER),
     joinedAt: timestamp("joined_at").defaultNow().notNull(),
   },
   (table) => [
     primaryKey({
-      name: "space_members_pk_space_user",
-      columns: [table.spaceId, table.memberId],
+      name: "space_members_pk_id",
+      columns: [table.id],
     }),
     foreignKey({
       name: "space_members_fk_space",
@@ -79,6 +83,7 @@ export const spaceMembers = pgTable(
     })
       .onDelete("cascade")
       .onUpdate("no action"),
+    unique("space_members_unique_space_user").on(table.spaceId, table.memberId),
   ],
 );
 

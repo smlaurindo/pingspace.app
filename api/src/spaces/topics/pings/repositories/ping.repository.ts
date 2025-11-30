@@ -3,6 +3,7 @@ import type {
   ListPingQuery,
   PaginatedPings,
   Ping,
+  ReadByTopicData,
 } from "../types/pings.types";
 
 export abstract class PingRepository {
@@ -19,4 +20,10 @@ export abstract class PingRepository {
    * @returns The created ping
    */
   abstract create(data: CreatePingData): Promise<Ping>;
+
+  /**
+   * Mark pings as read by topic for a user up to a specific timestamp
+   * @param data - Data containing spaceId, topicId, userId, and timestamp
+   */
+  abstract readByTopic(data: ReadByTopicData): Promise<void>;
 }

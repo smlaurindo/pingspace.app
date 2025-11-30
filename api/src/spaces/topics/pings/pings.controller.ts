@@ -4,6 +4,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -108,15 +109,37 @@ const listPingsQuerySchema = z.object({
     .default(10),
 });
 
+const markPingsAsReadParamsSchema = z.object({
+  spaceId: z.cuid2("Invalid space ID format"),
+  topicId: z.cuid2("Invalid topic ID format"),
+});
+
+const markPingsAsReadBodySchema = z
+  .object({
+    timestamp: z.iso
+      .datetime({ local: false, offset: true })
+      .transform((str) => new Date(str))
+      .default(() => new Date()),
+  })
+  .default({ timestamp: new Date() });
+
 const createPingBodyPipe = new ZodValidationPipe(createPingBodySchema);
 const createPingParamsPipe = new ZodValidationPipe(createPingParamsSchema);
 const listPingsParamsPipe = new ZodValidationPipe(listPingsParamsSchema);
 const listPingsQueryPipe = new ZodValidationPipe(listPingsQuerySchema);
+const markPingsAsReadParamsPipe = new ZodValidationPipe(
+  markPingsAsReadParamsSchema,
+);
+const markPingsAsReadBodyPipe = new ZodValidationPipe(
+  markPingsAsReadBodySchema,
+);
 
 type CreatePingRequestParams = z.infer<typeof createPingParamsSchema>;
 type CreatePingRequestBody = z.infer<typeof createPingBodySchema>;
 type ListPingsRequestParams = z.infer<typeof listPingsParamsSchema>;
 type ListPingsRequestQuery = z.infer<typeof listPingsQuerySchema>;
+type MarkPingsAsReadRequestParams = z.infer<typeof markPingsAsReadParamsSchema>;
+type MarkPingsAsReadRequestBody = z.infer<typeof markPingsAsReadBodySchema>;
 
 @Controller()
 @UseFilters(new PingsExceptionFilter())
@@ -181,5 +204,26 @@ export class PingsController {
     });
 
     return reply.status(HttpStatus.OK).send(pings);
+  }
+
+  @Patch("/v1/spaces/:spaceId/topics/:topicId/pings/read")
+  async markPingsAsRead(
+    @Param(markPingsAsReadParamsPipe) params: MarkPingsAsReadRequestParams,
+    @Body(markPingsAsReadBodyPipe) body: MarkPingsAsReadRequestBody,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { spaceId, topicId } = params;
+    const { timestamp } = body;
+    const { sub } = jwt;
+
+    await this.pingsService.markPingsAsRead({
+      spaceId,
+      topicId,
+      userId: sub,
+      timestamp,
+    });
+
+    return reply.status(HttpStatus.OK).send();
   }
 }

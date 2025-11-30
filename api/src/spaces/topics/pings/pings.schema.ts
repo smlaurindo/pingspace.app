@@ -9,7 +9,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { topics, topicTags } from "../topics.schema";
-import { spaceApiKeys } from "../../spaces.schema";
+import { spaceApiKeys, spaceMembers } from "../../spaces.schema";
 
 export const pings = pgTable(
   "pings",
@@ -113,5 +113,50 @@ export const pingTags = pgTable(
     unique("pings_topic_tags_unique_ping_tag").on(table.pingId, table.tagId),
     index("pings_topic_tags_idx_fk_ping").on(table.pingId),
     index("pings_topic_tags_idx_fk_tag").on(table.tagId),
+  ],
+);
+
+export const pingReads = pgTable(
+  "ping_reads",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .notNull(),
+    timestamp: timestamp("timestamp", {
+      precision: 0,
+      withTimezone: true,
+      mode: "date",
+    })
+      .notNull()
+      .defaultNow(),
+    spaceMemberId: text("space_member_id")
+      .references(() => spaceMembers.id)
+      .notNull(),
+    pingId: text("ping_id")
+      .notNull()
+      .references(() => pings.id),
+  },
+  (table) => [
+    primaryKey({ name: "ping_reads_pk_id", columns: [table.id] }),
+    foreignKey({
+      name: "ping_reads_fk_ping",
+      columns: [table.pingId],
+      foreignColumns: [pings.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("no action"),
+    foreignKey({
+      name: "ping_reads_fk_space_member",
+      columns: [table.spaceMemberId],
+      foreignColumns: [spaceMembers.id],
+    })
+      .onDelete("set null")
+      .onUpdate("no action"),
+    index("ping_reads_idx_fk_ping").on(table.pingId),
+    index("ping_reads_idx_fk_space_member").on(table.spaceMemberId),
+    unique("ping_reads_unique_member_ping").on(
+      table.spaceMemberId,
+      table.pingId,
+    ),
   ],
 );

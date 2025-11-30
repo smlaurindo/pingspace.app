@@ -56,3 +56,9 @@ export type PaginatedPings = {
     limit: number;
   };
 };
+
+export type ReadByTopicData = {
+  topicId: string;
+  spaceMemberId: string;
+  timestamp: Date;
+};
