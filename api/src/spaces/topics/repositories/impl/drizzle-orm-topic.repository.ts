@@ -12,7 +12,7 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     private readonly txHost: TransactionHost<TransactionalAdapterDrizzleORM>,
   ) {}
 
-  async create(data: CreateTopicData): Promise<{ topicId: string }> {
+  async createTopic(data: CreateTopicData): Promise<{ topicId: string }> {
     const [{ topicId }] = await this.txHost.tx
       .insert(topics)
       .values({
@@ -23,7 +23,7 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     return { topicId };
   }
 
-  async findBySpaceAndSlug(
+  async findTopicBySpaceIdAndSlug(
     spaceId: string,
     slug: string,
   ): Promise<TopicInfo | null> {
@@ -74,7 +74,7 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     return topic;
   }
 
-  async findBySpaceAndId(
+  async findTopicBySpaceIdAndId(
     spaceId: string,
     topicId: string,
   ): Promise<TopicInfo | null> {
@@ -101,7 +101,10 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     return topic;
   }
 
-  async existsBySpaceAndSlug(spaceId: string, slug: string): Promise<boolean> {
+  async checkTopicExistsBySpaceIdAndSlug(
+    spaceId: string,
+    slug: string,
+  ): Promise<boolean> {
     const [result] = await this.txHost.tx
       .select({ id: topics.id })
       .from(topics)
@@ -111,7 +114,10 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     return !!result;
   }
 
-  async existsBySpaceAndId(spaceId: string, topicId: string): Promise<boolean> {
+  async checkTopicExistsBySpaceIdAndId(
+    spaceId: string,
+    topicId: string,
+  ): Promise<boolean> {
     const [result] = await this.txHost.tx
       .select({ id: topics.id })
       .from(topics)
@@ -121,7 +127,7 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     return !!result;
   }
 
-  async deleteById(topicId: string): Promise<void> {
+  async deleteTopicById(topicId: string): Promise<void> {
     await this.txHost.tx.delete(topics).where(eq(topics.id, topicId));
   }
 }

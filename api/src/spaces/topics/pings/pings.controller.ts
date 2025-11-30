@@ -148,7 +148,7 @@ export class PingsController {
 
   @Post("/v1/topics/:topicSlug/pings")
   @UseGuards(SpaceApiKeyGuard)
-  async create(
+  async createPing(
     @Param(createPingParamsPipe) params: CreatePingRequestParams,
     @Body(createPingBodyPipe) body: CreatePingRequestBody,
     @ApiKeyPrincipal() apiKey: ApiKeyPayload,

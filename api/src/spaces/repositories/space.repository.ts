@@ -6,7 +6,7 @@ export abstract class SpaceRepository {
    * @param spaceId - The space identifier
    * @returns True if the space exists, false otherwise
    */
-  abstract checkSpaceExists(spaceId: string): Promise<boolean>;
+  abstract checkSpaceExistsById(spaceId: string): Promise<boolean>;
 
   /**
    * Check if a space with the given slug exists
@@ -26,5 +26,5 @@ export abstract class SpaceRepository {
    * Delete a space by ID
    * @param spaceId - The space identifier
    */
-  abstract deleteSpace(spaceId: string): Promise<void>;
+  abstract deleteSpaceById(spaceId: string): Promise<void>;
 }

@@ -19,7 +19,7 @@ export class DrizzleORMPingRepository implements PingRepository {
     private readonly txHost: TransactionHost<TransactionalAdapterDrizzleORM>,
   ) {}
 
-  async create(data: CreatePingData): Promise<Ping> {
+  async createPing(data: CreatePingData): Promise<Ping> {
     const [ping] = await this.txHost.tx
       .insert(pings)
       .values({
@@ -140,7 +140,7 @@ export class DrizzleORMPingRepository implements PingRepository {
     };
   }
 
-  async listByTopic({
+  async listPings({
     topicId,
     cursor,
     limit,
@@ -245,7 +245,7 @@ export class DrizzleORMPingRepository implements PingRepository {
     };
   }
 
-  async readByTopic({
+  async readPings({
     topicId,
     spaceMemberId,
     timestamp,

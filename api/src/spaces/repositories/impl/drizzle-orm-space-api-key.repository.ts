@@ -18,7 +18,7 @@ export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
     private readonly txHost: TransactionHost<TransactionalAdapterDrizzleORM>,
   ) {}
 
-  async create(data: CreateSpaceApiKeyData): Promise<SpaceApiKey> {
+  async createSpaceApiKey(data: CreateSpaceApiKeyData): Promise<SpaceApiKey> {
     const [apiKey] = await this.txHost.tx
       .insert(spaceApiKeys)
       .values({
@@ -46,7 +46,9 @@ export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
     };
   }
 
-  async findById(spaceApiKeyId: string): Promise<SpaceApiKey | null> {
+  async findSpaceApiKeyById(
+    spaceApiKeyId: string,
+  ): Promise<SpaceApiKey | null> {
     const [apiKey] = await this.txHost.tx
       .select({
         id: spaceApiKeys.id,
@@ -70,14 +72,14 @@ export class DrizzleORMSpaceApiKeyRepository implements SpaceApiKeyRepository {
     return apiKey;
   }
 
-  async updateLastUsed(spaceApiKeyId: string): Promise<void> {
+  async updateSpaceApiKeyLastUsedById(spaceApiKeyId: string): Promise<void> {
     await this.txHost.tx
       .update(spaceApiKeys)
       .set({ lastUsedAt: new Date() })
       .where(eq(spaceApiKeys.id, spaceApiKeyId));
   }
 
-  async listBySpace({
+  async listSpaceApiKeys({
     spaceId,
     limit,
     type,

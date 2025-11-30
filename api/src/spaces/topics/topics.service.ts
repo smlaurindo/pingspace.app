@@ -3,7 +3,7 @@ import { Transactional } from "@nestjs-cls/transactional";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { SpaceRepository } from "../repositories/space.repository";
 import { SpaceNotFoundException } from "../exceptions/space-not-found.exception";
-import { SpaceMembershipRepository } from "../repositories/space-membership.repository";
+import { SpaceMemberRepository } from "../repositories/space-member.repository";
 import { UnauthorizedSpaceAccessException } from "../exceptions/unauthorized-space-access.exception";
 import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "../spaces.schema";
 import { InsufficientSpacePermissionsException } from "../exceptions/insufficient-space-permissions.exception";
@@ -22,7 +22,7 @@ import { TopicNotFoundException } from "../exceptions/topic-not-found.exception"
 export class TopicsService {
   public constructor(
     private readonly spaceRepository: SpaceRepository,
-    private readonly spaceMembershipRepository: SpaceMembershipRepository,
+    private readonly spaceMemberRepository: SpaceMemberRepository,
     private readonly topicRepository: TopicRepository,
   ) {}
 
@@ -51,9 +51,15 @@ export class TopicsService {
 
     const [spaceExists, spaceMember, topicSlugAlreadyExists] =
       await Promise.all([
-        this.spaceRepository.checkSpaceExists(spaceId),
-        this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
-        this.topicRepository.existsBySpaceAndSlug(spaceId, finalSlug),
+        this.spaceRepository.checkSpaceExistsById(spaceId),
+        this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+          spaceId,
+          userId,
+        ),
+        this.topicRepository.checkTopicExistsBySpaceIdAndSlug(
+          spaceId,
+          finalSlug,
+        ),
       ]);
 
     if (!spaceExists) {
@@ -83,7 +89,7 @@ export class TopicsService {
       throw new TopicSlugAlreadyExistsException(finalSlug);
     }
 
-    const { topicId } = await this.topicRepository.create({
+    const { topicId } = await this.topicRepository.createTopic({
       spaceId,
       name,
       emoji,
@@ -100,9 +106,12 @@ export class TopicsService {
     const { spaceId, topicId, userId } = request;
 
     const [spaceExists, spaceMember, topic] = await Promise.all([
-      this.spaceRepository.checkSpaceExists(spaceId),
-      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
-      this.topicRepository.findBySpaceAndId(spaceId, topicId),
+      this.spaceRepository.checkSpaceExistsById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
+      this.topicRepository.findTopicBySpaceIdAndId(spaceId, topicId),
     ]);
 
     if (!spaceExists) {
@@ -127,17 +136,20 @@ export class TopicsService {
   async deleteTopic(request: DeleteTopicRequest): Promise<void> {
     const { spaceId, topicId, userId } = request;
 
-    const [spaceExists, spaceMembership, topicExists] = await Promise.all([
-      this.spaceRepository.checkSpaceExists(spaceId),
-      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
-      this.topicRepository.existsBySpaceAndId(spaceId, topicId),
+    const [spaceExists, spaceMember, topicExists] = await Promise.all([
+      this.spaceRepository.checkSpaceExistsById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
+      this.topicRepository.checkTopicExistsBySpaceIdAndId(spaceId, topicId),
     ]);
 
     if (!spaceExists) {
       throw new SpaceNotFoundException(spaceId);
     }
 
-    if (!spaceMembership) {
+    if (!spaceMember) {
       throw new UnauthorizedSpaceAccessException(
         spaceId,
         "You must be a member of the space to delete topics.",
@@ -145,8 +157,8 @@ export class TopicsService {
     }
 
     const isSpaceMembershipAllowedToDeleteTopics =
-      spaceMembership.role === SPACE_ROLE_OWNER ||
-      spaceMembership.role === SPACE_ROLE_ADMIN;
+      spaceMember.role === SPACE_ROLE_OWNER ||
+      spaceMember.role === SPACE_ROLE_ADMIN;
 
     if (!isSpaceMembershipAllowedToDeleteTopics) {
       throw new InsufficientSpacePermissionsException(
@@ -160,6 +172,6 @@ export class TopicsService {
       throw new TopicNotFoundException(topicId);
     }
 
-    await this.topicRepository.deleteById(topicId);
+    await this.topicRepository.deleteTopicById(topicId);
   }
 }

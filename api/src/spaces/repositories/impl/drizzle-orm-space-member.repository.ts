@@ -4,24 +4,22 @@ import { and, eq } from "drizzle-orm";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { spaceMembers } from "../../spaces.schema";
 import type {
-  CreateMembershipData,
-  SpaceMembershipInfo,
+  CreateSpaceMemberData,
+  SpaceMember,
 } from "../../types/spaces.types";
-import { SpaceMembershipRepository } from "../space-membership.repository";
+import { SpaceMemberRepository } from "../space-member.repository";
 
 @Injectable()
-export class DrizzleORMRepositorySpaceMembership
-  implements SpaceMembershipRepository
-{
+export class DrizzleORMRepositorySpaceMember implements SpaceMemberRepository {
   constructor(
     private readonly txHost: TransactionHost<TransactionalAdapterDrizzleORM>,
   ) {}
 
-  async findBySpaceAndUser(
+  async findSpaceMemberBySpaceIdAndMemberId(
     spaceId: string,
-    userId: string,
-  ): Promise<SpaceMembershipInfo | null> {
-    const [membership] = await this.txHost.tx
+    memberId: string,
+  ): Promise<SpaceMember | null> {
+    const [spaceMember] = await this.txHost.tx
       .select({
         id: spaceMembers.id,
         role: spaceMembers.role,
@@ -32,26 +30,19 @@ export class DrizzleORMRepositorySpaceMembership
       .where(
         and(
           eq(spaceMembers.spaceId, spaceId),
-          eq(spaceMembers.memberId, userId),
+          eq(spaceMembers.memberId, memberId),
         ),
       )
       .limit(1);
 
-    if (!membership) {
+    if (!spaceMember) {
       return null;
     }
 
-    const membershipInfo: SpaceMembershipInfo = {
-      id: membership.id,
-      role: membership.role,
-      spaceId: membership.spaceId,
-      memberId: membership.memberId,
-    };
-
-    return membershipInfo;
+    return spaceMember;
   }
 
-  async createMembership(data: CreateMembershipData): Promise<void> {
+  async createSpaceMember(data: CreateSpaceMemberData): Promise<void> {
     await this.txHost.tx.insert(spaceMembers).values({
       ...data,
     });

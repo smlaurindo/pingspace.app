@@ -14,7 +14,7 @@ import type {
 } from "./types/pings.dto";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { SpaceRepository } from "../../repositories/space.repository";
-import { SpaceMembershipRepository } from "../../repositories/space-membership.repository";
+import { SpaceMemberRepository } from "../../repositories/space-member.repository";
 import { SpaceNotFoundException } from "../../exceptions/space-not-found.exception";
 import { UnauthorizedSpaceAccessException } from "../../exceptions/unauthorized-space-access.exception";
 import { TopicNotFoundException } from "../../exceptions/topic-not-found.exception";
@@ -23,7 +23,7 @@ import { TopicNotFoundException } from "../../exceptions/topic-not-found.excepti
 export class PingsService {
   public constructor(
     private readonly spaceRepository: SpaceRepository,
-    private readonly spaceMembershipRepository: SpaceMembershipRepository,
+    private readonly spaceMemberRepository: SpaceMemberRepository,
     private readonly spaceApiKeyRepository: SpaceApiKeyRepository,
     private readonly topicRepository: TopicRepository,
     private readonly pingRepository: PingRepository,
@@ -54,13 +54,14 @@ export class PingsService {
     const { apiKeyId, topicSlug, title, contentType, content, tags, actions } =
       request;
 
-    const apiKey = await this.spaceApiKeyRepository.findById(apiKeyId);
+    const apiKey =
+      await this.spaceApiKeyRepository.findSpaceApiKeyById(apiKeyId);
 
     if (!apiKey) {
       throw new SpaceApiKeyNotFoundException(apiKeyId);
     }
 
-    const topic = await this.topicRepository.findBySpaceAndSlug(
+    const topic = await this.topicRepository.findTopicBySpaceIdAndSlug(
       apiKey.spaceId,
       topicSlug,
     );
@@ -71,7 +72,7 @@ export class PingsService {
 
     const titleToUse = title ?? this.generateTitle(content, contentType);
 
-    const newPing = await this.pingRepository.create({
+    const newPing = await this.pingRepository.createPing({
       title: titleToUse,
       contentType,
       content,
@@ -103,16 +104,19 @@ export class PingsService {
   async listPings(request: ListPingsRequest): Promise<ListPingsResponse> {
     const { spaceId, topicId, userId, cursor, limit } = request;
 
-    const [spaceExists, spaceMembership, topicExistsAndBelongsToSpace] =
+    const [spaceExists, spaceMember, topicExistsAndBelongsToSpace] =
       await Promise.all([
-        this.spaceRepository.checkSpaceExists(spaceId),
-        this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
-        this.topicRepository.existsBySpaceAndId(spaceId, topicId),
+        this.spaceRepository.checkSpaceExistsById(spaceId),
+        this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+          spaceId,
+          userId,
+        ),
+        this.topicRepository.checkTopicExistsBySpaceIdAndId(spaceId, topicId),
       ]);
 
     if (!spaceExists) throw new SpaceNotFoundException(spaceId);
 
-    if (!spaceMembership) {
+    if (!spaceMember) {
       throw new UnauthorizedSpaceAccessException(
         spaceId,
         "You must be a member of the space to list pings.",
@@ -123,7 +127,7 @@ export class PingsService {
       throw new TopicNotFoundException(topicId);
     }
 
-    return await this.pingRepository.listByTopic({
+    return await this.pingRepository.listPings({
       topicId,
       cursor,
       limit,
@@ -134,16 +138,19 @@ export class PingsService {
   async markPingsAsRead(request: MarkPingsAsReadRequest): Promise<void> {
     const { spaceId, topicId, userId, timestamp } = request;
 
-    const [spaceExists, spaceMembership, topicExistsAndBelongsToSpace] =
+    const [spaceExists, spaceMember, topicExistsAndBelongsToSpace] =
       await Promise.all([
-        this.spaceRepository.checkSpaceExists(spaceId),
-        this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
-        this.topicRepository.existsBySpaceAndId(spaceId, topicId),
+        this.spaceRepository.checkSpaceExistsById(spaceId),
+        this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+          spaceId,
+          userId,
+        ),
+        this.topicRepository.checkTopicExistsBySpaceIdAndId(spaceId, topicId),
       ]);
 
     if (!spaceExists) throw new SpaceNotFoundException(spaceId);
 
-    if (!spaceMembership) {
+    if (!spaceMember) {
       throw new UnauthorizedSpaceAccessException(
         spaceId,
         "You must be a member of the space to mark pings as read.",
@@ -154,9 +161,9 @@ export class PingsService {
       throw new TopicNotFoundException(topicId);
     }
 
-    await this.pingRepository.readByTopic({
+    await this.pingRepository.readPings({
       topicId,
-      spaceMemberId: spaceMembership.id,
+      spaceMemberId: spaceMember.id,
       timestamp,
     });
   }

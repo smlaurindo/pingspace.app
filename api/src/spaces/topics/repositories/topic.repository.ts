@@ -4,56 +4,56 @@ export abstract class TopicRepository {
   /**
    * Create a new topic in a space
    * @param data - Topic creation data
-   * @returns The created topic ID
+   * @returns The created topic id
    */
-  abstract create(data: CreateTopicData): Promise<{ topicId: string }>;
+  abstract createTopic(data: CreateTopicData): Promise<{ topicId: string }>;
 
   /**
-   * Find a topic by space ID and slug
+   * Find a topic by space id and slug
    * @param spaceId - The space identifier
    * @param slug - The topic slug
    * @returns The topic info or null if not found
    */
-  abstract findBySpaceAndSlug(
+  abstract findTopicBySpaceIdAndSlug(
     spaceId: string,
     slug: string,
   ): Promise<TopicInfo | null>;
 
   /**
-   * Find a topic by space ID and ID
+   * Find a topic by space id and id
    * @param spaceId - The space identifier
    * @param topicId - The topic identifier
    * @returns The topic info or null if not found
    */
-  abstract findBySpaceAndId(
+  abstract findTopicBySpaceIdAndId(
     spaceId: string,
     topicId: string,
   ): Promise<TopicInfo | null>;
 
   /**
-   * Check if a topic exists by space ID and slug
+   * Check if a topic exists by space id and slug
    * @param spaceId - The space identifier
    * @param slug - The topic slug
    * @returns True if exists, false otherwise
    */
-  abstract existsBySpaceAndSlug(
+  abstract checkTopicExistsBySpaceIdAndSlug(
     spaceId: string,
     slug: string,
   ): Promise<boolean>;
 
   /**
-   * Check if a topic exists by space ID and ID
+   * Check if a topic exists by space id and id
    * @param spaceId - The space identifier
    * @param topicId - The topic identifier
    */
-  abstract existsBySpaceAndId(
+  abstract checkTopicExistsBySpaceIdAndId(
     spaceId: string,
     topicId: string,
   ): Promise<boolean>;
 
   /**
-   * Delete a topic by topic ID
+   * Delete a topic by id
    * @param topicId - The topic identifier
    */
-  abstract deleteById(topicId: string): Promise<void>;
+  abstract deleteTopicById(topicId: string): Promise<void>;
 }

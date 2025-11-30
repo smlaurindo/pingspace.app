@@ -42,7 +42,8 @@ export class SpaceApiKeyGuard implements CanActivate {
       throw new UnauthorizedException("Malformed API Key");
     }
 
-    const storedApiKey = await this.spaceApiKeyRepository.findById(keyId);
+    const storedApiKey =
+      await this.spaceApiKeyRepository.findSpaceApiKeyById(keyId);
 
     if (!storedApiKey) {
       throw new UnauthorizedException("API Key not found");

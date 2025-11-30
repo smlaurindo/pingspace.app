@@ -2,8 +2,8 @@ import { Module } from "@nestjs/common";
 import { DrizzleModule } from "@/drizzle/drizzle.module";
 import { SpacesController } from "./spaces.controller";
 import { SpacesService } from "./spaces.service";
-import { DrizzleORMRepositorySpaceMembership } from "./repositories/impl/drizzle-orm-space-membership.repository";
-import { SpaceMembershipRepository } from "./repositories/space-membership.repository";
+import { DrizzleORMRepositorySpaceMember } from "./repositories/impl/drizzle-orm-space-member.repository";
+import { SpaceMemberRepository } from "./repositories/space-member.repository";
 import { SpaceRepository } from "./repositories/space.repository";
 import { DrizzleORMSpaceRepository } from "./repositories/impl/drizzle-orm-space.repository";
 import { SpaceApiKeyRepository } from "./repositories/space-api-key.repository";
@@ -16,8 +16,8 @@ import { SpaceApiKeyGuard } from "./guards/space-api-key.guard";
   providers: [
     SpacesService,
     {
-      provide: SpaceMembershipRepository,
-      useClass: DrizzleORMRepositorySpaceMembership,
+      provide: SpaceMemberRepository,
+      useClass: DrizzleORMRepositorySpaceMember,
     },
     {
       provide: SpaceApiKeyRepository,
@@ -29,6 +29,6 @@ import { SpaceApiKeyGuard } from "./guards/space-api-key.guard";
     },
     SpaceApiKeyGuard,
   ],
-  exports: [SpaceMembershipRepository, SpaceRepository, SpaceApiKeyRepository],
+  exports: [SpaceMemberRepository, SpaceRepository, SpaceApiKeyRepository],
 })
 export class SpacesModule {}

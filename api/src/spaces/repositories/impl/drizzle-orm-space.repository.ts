@@ -12,7 +12,7 @@ export class DrizzleORMSpaceRepository implements SpaceRepository {
     private readonly txHost: TransactionHost<TransactionalAdapterDrizzleORM>,
   ) {}
 
-  async checkSpaceExists(spaceId: string): Promise<boolean> {
+  async checkSpaceExistsById(spaceId: string): Promise<boolean> {
     const result = await this.txHost.tx
       .select({ id: spaces.id })
       .from(spaces)
@@ -49,7 +49,7 @@ export class DrizzleORMSpaceRepository implements SpaceRepository {
     return spaceId;
   }
 
-  async deleteSpace(spaceId: string): Promise<void> {
+  async deleteSpaceById(spaceId: string): Promise<void> {
     await this.txHost.tx.delete(spaces).where(eq(spaces.id, spaceId));
   }
 }

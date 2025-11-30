@@ -132,7 +132,7 @@ export class SpacesController {
   ) {
     const { sub } = jwt;
 
-    await this.spacesService.deleteSpace({
+    await this.spacesService.deleteSpaceById({
       spaceId,
       userId: sub,
     });

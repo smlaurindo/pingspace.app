@@ -6,7 +6,7 @@ import { ConfigService } from "@/config/config.service";
 import { SpaceSlugAlreadyExistsException } from "./exceptions/space-slug-already-exists.exception";
 import { SpaceRepository } from "./repositories/space.repository";
 import { SpaceNotFoundException } from "./exceptions/space-not-found.exception";
-import { SpaceMembershipRepository } from "./repositories/space-membership.repository";
+import { SpaceMemberRepository } from "./repositories/space-member.repository";
 import { InsufficientSpacePermissionsException } from "./exceptions/insufficient-space-permissions.exception";
 import { UnauthorizedSpaceAccessException } from "./exceptions/unauthorized-space-access.exception";
 import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "./spaces.schema";
@@ -26,7 +26,7 @@ import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 export class SpacesService {
   public constructor(
     private readonly spaceRepository: SpaceRepository,
-    private readonly spaceMembershipRepository: SpaceMembershipRepository,
+    private readonly spaceMemberRepository: SpaceMemberRepository,
     private readonly spaceApiKeyRepository: SpaceApiKeyRepository,
     private readonly configService: ConfigService,
   ) {}
@@ -59,7 +59,7 @@ export class SpacesService {
       ownerId: userId,
     });
 
-    await this.spaceMembershipRepository.createMembership({
+    await this.spaceMemberRepository.createSpaceMember({
       spaceId,
       memberId: userId,
       role: SPACE_ROLE_OWNER,
@@ -69,12 +69,15 @@ export class SpacesService {
   }
 
   @Transactional()
-  async deleteSpace(request: DeleteSpaceRequest): Promise<void> {
+  async deleteSpaceById(request: DeleteSpaceRequest): Promise<void> {
     const { spaceId, userId } = request;
 
     const [spaceExists, spaceMember] = await Promise.all([
-      this.spaceRepository.checkSpaceExists(spaceId),
-      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+      this.spaceRepository.checkSpaceExistsById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
     ]);
 
     if (!spaceExists) {
@@ -95,7 +98,7 @@ export class SpacesService {
       );
     }
 
-    await this.spaceRepository.deleteSpace(spaceId);
+    await this.spaceRepository.deleteSpaceById(spaceId);
   }
 
   @Transactional()
@@ -104,14 +107,17 @@ export class SpacesService {
   ): Promise<CreateSpaceApiKeyResponse> {
     const { spaceId, userId, name, description } = request;
 
-    const [spaceExists, spaceMembership] = await Promise.all([
-      this.spaceRepository.checkSpaceExists(spaceId),
-      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
+    const [spaceExists, spaceMember] = await Promise.all([
+      this.spaceRepository.checkSpaceExistsById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
     ]);
 
     if (!spaceExists) throw new SpaceNotFoundException(spaceId);
 
-    if (!spaceMembership) {
+    if (!spaceMember) {
       throw new UnauthorizedSpaceAccessException(
         spaceId,
         "You must be a member of the space to create API keys.",
@@ -119,7 +125,7 @@ export class SpacesService {
     }
 
     const canCreate = [SPACE_ROLE_OWNER, SPACE_ROLE_ADMIN].includes(
-      spaceMembership.role,
+      spaceMember.role,
     );
 
     if (!canCreate) {
@@ -137,12 +143,12 @@ export class SpacesService {
     const rawSecret = randomBytes(48).toString("base64url");
     const keyHash = await hash(rawSecret, hashSalt);
 
-    const apiKey = await this.spaceApiKeyRepository.create({
+    const apiKey = await this.spaceApiKeyRepository.createSpaceApiKey({
       spaceId,
       keyHash,
       name,
       description,
-      createdBy: spaceMembership.id,
+      createdBy: spaceMember.id,
     });
 
     return {
@@ -160,10 +166,13 @@ export class SpacesService {
   ): Promise<ListSpaceApiKeysResponse> {
     const { spaceId, userId, cursor, limit, type } = request;
 
-    const [spaceExists, spaceMembership, result] = await Promise.all([
-      this.spaceRepository.checkSpaceExists(spaceId),
-      this.spaceMembershipRepository.findBySpaceAndUser(spaceId, userId),
-      this.spaceApiKeyRepository.listBySpace({
+    const [spaceExists, spaceMember, result] = await Promise.all([
+      this.spaceRepository.checkSpaceExistsById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
+      this.spaceApiKeyRepository.listSpaceApiKeys({
         spaceId,
         cursor,
         limit,
@@ -173,7 +182,7 @@ export class SpacesService {
 
     if (!spaceExists) throw new SpaceNotFoundException(spaceId);
 
-    if (!spaceMembership) {
+    if (!spaceMember) {
       throw new UnauthorizedSpaceAccessException(
         spaceId,
         "You must be a member of the space to list API keys.",
@@ -181,7 +190,7 @@ export class SpacesService {
     }
 
     const canList = [SPACE_ROLE_OWNER, SPACE_ROLE_ADMIN].includes(
-      spaceMembership.role,
+      spaceMember.role,
     );
 
     if (!canList) {

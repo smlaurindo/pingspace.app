@@ -1,6 +1,6 @@
 export type SpaceMemberRole = "OWNER" | "ADMIN" | "MEMBER";
 
-export type SpaceMembershipInfo = {
+export type SpaceMember = {
   id: string;
   role: SpaceMemberRole;
   spaceId: string;
@@ -15,7 +15,7 @@ export type CreateSpaceData = {
   ownerId: string;
 };
 
-export type CreateMembershipData = {
+export type CreateSpaceMemberData = {
   role: SpaceMemberRole;
   spaceId: string;
   memberId: string;
