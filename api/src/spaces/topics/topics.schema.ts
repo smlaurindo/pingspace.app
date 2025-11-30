@@ -24,8 +24,10 @@ export const topics = pgTable(
     slug: text("slug").notNull(),
     shortDescription: text("short_description").notNull(),
     description: text("description"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }),
   },
   (table) => [
     primaryKey({ name: "topics_pk_id", columns: [table.id] }),
@@ -51,7 +53,9 @@ export const topicTags = pgTable(
     topicId: text("topic_id")
       .notNull()
       .references(() => topics.id),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     primaryKey({ name: "topic_tags_pk_id", columns: [table.id] }),

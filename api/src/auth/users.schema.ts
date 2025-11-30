@@ -10,8 +10,10 @@ export const users = pgTable(
     nickname: text("nickname").notNull(),
     email: text("email").notNull().unique(),
     passwordHash: text("password_hash").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }),
   },
   (table) => [primaryKey({ name: "users_pk_id", columns: [table.id] })],
 );

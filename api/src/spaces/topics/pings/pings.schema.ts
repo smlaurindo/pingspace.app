@@ -26,8 +26,10 @@ export const pings = pgTable(
     topicId: text("topic_id")
       .notNull()
       .references(() => topics.id),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }),
   },
   (table) => [
     primaryKey({ name: "pings_pk_id", columns: [table.id] }),
@@ -65,7 +67,9 @@ export const pingActions = pgTable(
     pingId: text("ping_id")
       .notNull()
       .references(() => pings.id),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     primaryKey({ name: "ping_actions_pk_id", columns: [table.id] }),
@@ -89,7 +93,9 @@ export const pingTags = pgTable(
     tagId: text("tag_id")
       .notNull()
       .references(() => topicTags.id),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     primaryKey({
@@ -135,6 +141,9 @@ export const pingReads = pgTable(
     pingId: text("ping_id")
       .notNull()
       .references(() => pings.id),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     primaryKey({ name: "ping_reads_pk_id", columns: [table.id] }),

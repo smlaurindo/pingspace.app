@@ -22,8 +22,10 @@ export const spaces = pgTable(
     shortDescription: text("short_description").notNull(),
     description: text("description"),
     ownerId: text("owner_id").references(() => users.id),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }),
   },
   (table) => [
     primaryKey({ name: "spaces_pk_id", columns: [table.id] }),
@@ -62,7 +64,13 @@ export const spaceMembers = pgTable(
       .references(() => users.id)
       .notNull(),
     role: spaceMemberRole("role").notNull().default(SPACE_ROLE_MEMBER),
-    joinedAt: timestamp("joined_at").defaultNow().notNull(),
+    joinedAt: timestamp("joined_at", {
+      withTimezone: true,
+      precision: 0,
+      mode: "date",
+    })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     primaryKey({
@@ -105,8 +113,10 @@ export const spaceApiKeys = pgTable(
     createdBy: text("created_by")
       .notNull()
       .references(() => users.id),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    lastUsedAt: timestamp("last_used_at"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: "date" }),
   },
   (table) => [
     primaryKey({ name: "space_api_keys_pk_id", columns: [table.id] }),
