@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1764522129593,
-      "tag": "0000_flippant_mesmero",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1764526426661,
-      "tag": "0001_lying_clea",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1764531091683,
-      "tag": "0002_kind_rhodey",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1764531374750,
-      "tag": "0003_rainy_shadowcat",
+      "when": 1764541632556,
+      "tag": "0000_neat_thunderbolt",
       "breakpoints": true
     }
   ]

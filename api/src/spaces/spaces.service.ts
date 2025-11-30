@@ -142,7 +142,7 @@ export class SpacesService {
       keyHash,
       name,
       description,
-      createdBy: userId,
+      createdBy: spaceMembership.id,
     });
 
     return {

@@ -1,5 +1,5 @@
 {
-  "id": "37457c2a-6b56-426c-880f-ec8df80dbb99",
+  "id": "c5c18143-0cfa-47d7-af2e-947818845be3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -34,14 +34,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         }
@@ -118,14 +118,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
         "last_used_at": {
           "name": "last_used_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         }
@@ -146,8 +146,8 @@
           "method": "btree",
           "with": {}
         },
-        "space_api_keys_idx_fk_user": {
-          "name": "space_api_keys_idx_fk_user",
+        "space_api_keys_idx_fk_space_member": {
+          "name": "space_api_keys_idx_fk_space_member",
           "columns": [
             {
               "expression": "created_by",
@@ -176,10 +176,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "space_api_keys_created_by_users_id_fk": {
-          "name": "space_api_keys_created_by_users_id_fk",
+        "space_api_keys_created_by_space_members_id_fk": {
+          "name": "space_api_keys_created_by_space_members_id_fk",
           "tableFrom": "space_api_keys",
-          "tableTo": "users",
+          "tableTo": "space_members",
           "columnsFrom": [
             "created_by"
           ],
@@ -202,10 +202,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "space_api_keys_fk_user": {
-          "name": "space_api_keys_fk_user",
+        "space_api_keys_fk_space_member": {
+          "name": "space_api_keys_fk_space_member",
           "tableFrom": "space_api_keys",
-          "tableTo": "users",
+          "tableTo": "space_members",
           "columnsFrom": [
             "created_by"
           ],
@@ -261,7 +261,7 @@
         },
         "joined_at": {
           "name": "joined_at",
-          "type": "timestamp",
+          "type": "timestamp (0) with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -386,14 +386,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         }
@@ -503,7 +503,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -645,14 +645,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         }
@@ -790,7 +790,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -882,9 +882,47 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "ping_reads_idx_fk_ping": {
+          "name": "ping_reads_idx_fk_ping",
+          "columns": [
+            {
+              "expression": "ping_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "ping_reads_idx_fk_space_member": {
+          "name": "ping_reads_idx_fk_space_member",
+          "columns": [
+            {
+              "expression": "space_member_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "ping_reads_space_member_id_space_members_id_fk": {
           "name": "ping_reads_space_member_id_space_members_id_fk",
@@ -979,7 +1017,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -1136,14 +1174,14 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         }
