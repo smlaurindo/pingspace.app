@@ -1,4 +1,4 @@
-CREATE TYPE "public"."space_member_role" AS ENUM('OWNER', 'ADMIN', 'MEMBER');--> statement-breakpoint
+CREATE TYPE "space_member_role" AS ENUM('OWNER', 'ADMIN', 'MEMBER');--> statement-breakpoint
 CREATE TABLE "users" (
 	"id" text NOT NULL,
 	"nickname" text NOT NULL,
@@ -111,20 +111,20 @@ CREATE TABLE "pings" (
 	CONSTRAINT "pings_pk_id" PRIMARY KEY("id")
 );
 --> statement-breakpoint
-ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_fk_space" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_fk_space_member" FOREIGN KEY ("created_by") REFERENCES "public"."space_members"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "space_members" ADD CONSTRAINT "space_members_fk_space" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "space_members" ADD CONSTRAINT "space_members_fk_user" FOREIGN KEY ("member_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "spaces" ADD CONSTRAINT "spaces_fk_user" FOREIGN KEY ("owner_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "topic_tags" ADD CONSTRAINT "topic_tags_fk_topic" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "topics" ADD CONSTRAINT "topics_fk_space" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "ping_actions" ADD CONSTRAINT "ping_actions_fk_ping" FOREIGN KEY ("ping_id") REFERENCES "public"."pings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "ping_reads" ADD CONSTRAINT "ping_reads_fk_ping" FOREIGN KEY ("ping_id") REFERENCES "public"."pings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "ping_reads" ADD CONSTRAINT "ping_reads_fk_space_member" FOREIGN KEY ("space_member_id") REFERENCES "public"."space_members"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pings_topic_tags" ADD CONSTRAINT "pings_topic_tags_fk_ping" FOREIGN KEY ("ping_id") REFERENCES "public"."pings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pings_topic_tags" ADD CONSTRAINT "pings_topic_tags_fk_tag" FOREIGN KEY ("tag_id") REFERENCES "public"."topic_tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pings" ADD CONSTRAINT "pings_fk_topic" FOREIGN KEY ("topic_id") REFERENCES "public"."topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pings" ADD CONSTRAINT "pings_fk_api_key" FOREIGN KEY ("api_key_id") REFERENCES "public"."space_api_keys"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_fk_space" FOREIGN KEY ("space_id") REFERENCES "spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "space_api_keys" ADD CONSTRAINT "space_api_keys_fk_space_member" FOREIGN KEY ("created_by") REFERENCES "space_members"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "space_members" ADD CONSTRAINT "space_members_fk_space" FOREIGN KEY ("space_id") REFERENCES "spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "space_members" ADD CONSTRAINT "space_members_fk_user" FOREIGN KEY ("member_id") REFERENCES "users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "spaces" ADD CONSTRAINT "spaces_fk_user" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "topic_tags" ADD CONSTRAINT "topic_tags_fk_topic" FOREIGN KEY ("topic_id") REFERENCES "topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "topics" ADD CONSTRAINT "topics_fk_space" FOREIGN KEY ("space_id") REFERENCES "spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "ping_actions" ADD CONSTRAINT "ping_actions_fk_ping" FOREIGN KEY ("ping_id") REFERENCES "pings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "ping_reads" ADD CONSTRAINT "ping_reads_fk_ping" FOREIGN KEY ("ping_id") REFERENCES "pings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "ping_reads" ADD CONSTRAINT "ping_reads_fk_space_member" FOREIGN KEY ("space_member_id") REFERENCES "space_members"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pings_topic_tags" ADD CONSTRAINT "pings_topic_tags_fk_ping" FOREIGN KEY ("ping_id") REFERENCES "pings"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pings_topic_tags" ADD CONSTRAINT "pings_topic_tags_fk_tag" FOREIGN KEY ("tag_id") REFERENCES "topic_tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pings" ADD CONSTRAINT "pings_fk_topic" FOREIGN KEY ("topic_id") REFERENCES "topics"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "pings" ADD CONSTRAINT "pings_fk_api_key" FOREIGN KEY ("api_key_id") REFERENCES "space_api_keys"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "space_api_keys_idx_fk_space" ON "space_api_keys" USING btree ("space_id");--> statement-breakpoint
 CREATE INDEX "space_api_keys_idx_fk_space_member" ON "space_api_keys" USING btree ("created_by");--> statement-breakpoint
 CREATE INDEX "spaces_idx_fk_user" ON "spaces" USING btree ("owner_id");--> statement-breakpoint

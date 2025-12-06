@@ -23,7 +23,8 @@
     "strict": false,
     "noImplicitOverride": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@test/*": ["./test/*"]
     },
   },
 }
