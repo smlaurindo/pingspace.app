@@ -35,3 +35,21 @@ export type GetTopicResponse = {
   createdAt: Date;
   updatedAt: Date | null;
 };
+
+export type ListTopicsRequest = {
+  spaceId: string;
+  userId: string;
+};
+
+export type ListTopicsResponse = {
+  id: string;
+  spaceId: string;
+  name: string;
+  slug: string;
+  emoji: string;
+  unreadCount: number;
+  shortDescription: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+};

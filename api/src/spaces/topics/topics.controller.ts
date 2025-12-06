@@ -58,11 +58,20 @@ const createTopicSchema = z.object({
     .optional(),
 });
 
+const listTopicsParamSchema = z.object({
+  spaceId: z.cuid2("Invalid spaceId"),
+});
+
 const createTopicSchemaValidationPipe = new ZodValidationPipe(
   createTopicSchema,
 );
 
+const listTopicsParamSchemaValidationPipe = new ZodValidationPipe(
+  listTopicsParamSchema,
+);
+
 type CreateTopicRequestBody = z.infer<typeof createTopicSchema>;
+type ListTopicsRequestParam = z.infer<typeof listTopicsParamSchema>;
 
 @Controller()
 @UseFilters(new TopicsExceptionFilter())
@@ -111,6 +120,23 @@ export class TopicsController {
     });
 
     return reply.status(HttpStatus.OK).send(topic);
+  }
+
+  @Get("/v1/spaces/:spaceId/topics")
+  async listTopics(
+    @Param(listTopicsParamSchemaValidationPipe) params: ListTopicsRequestParam,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { spaceId } = params;
+    const { sub } = jwt;
+
+    const topics = await this.topicsService.listTopics({
+      spaceId,
+      userId: sub,
+    });
+
+    return reply.status(HttpStatus.OK).send(topics);
   }
 
   @Delete("/v1/spaces/:spaceId/topics/:topicId")

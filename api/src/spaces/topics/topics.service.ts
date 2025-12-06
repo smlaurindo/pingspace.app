@@ -15,6 +15,8 @@ import type {
   DeleteTopicRequest,
   GetTopicRequest,
   GetTopicResponse,
+  ListTopicsRequest,
+  ListTopicsResponse,
 } from "./types/topics.dto";
 import { TopicNotFoundException } from "../exceptions/topic-not-found.exception";
 
@@ -130,6 +132,35 @@ export class TopicsService {
     }
 
     return topic;
+  }
+
+  @Transactional<TransactionalAdapterDrizzleORM>({ accessMode: "read only" })
+  async listTopics(request: ListTopicsRequest): Promise<ListTopicsResponse[]> {
+    const { spaceId, userId } = request;
+
+    const [spaceExists, spaceMember] = await Promise.all([
+      this.spaceRepository.checkSpaceExistsById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
+    ]);
+
+    if (!spaceExists) {
+      throw new SpaceNotFoundException(spaceId);
+    }
+
+    if (!spaceMember) {
+      throw new UnauthorizedSpaceAccessException(
+        spaceId,
+        "You must be a member of the space to list topics.",
+      );
+    }
+
+    return await this.topicRepository.listTopicsBySpaceIdAndSpaceMemberId(
+      spaceId,
+      spaceMember.id,
+    );
   }
 
   @Transactional()

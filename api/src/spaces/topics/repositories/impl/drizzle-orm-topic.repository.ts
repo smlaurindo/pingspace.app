@@ -2,9 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 import { TransactionHost } from "@nestjs-cls/transactional";
 import { topics } from "@/spaces/topics/topics.schema";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq, isNull, sql } from "drizzle-orm";
 import { TopicRepository } from "../topic.repository";
-import { CreateTopicData, TopicInfo } from "../../types/topics.types";
+import {
+  CreateTopicData,
+  TopicInfo,
+  TopicWithUnreadCount,
+} from "../../types/topics.types";
+import { pings, pingReads } from "../../pings/pings.schema";
 
 @Injectable()
 export class DrizzleORMTopicRepository implements TopicRepository {
@@ -99,6 +104,50 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     }
 
     return topic;
+  }
+
+  async listTopicsBySpaceIdAndSpaceMemberId(
+    spaceId: string,
+    spaceMemberId: string,
+  ): Promise<TopicWithUnreadCount[]> {
+    const unreadCountSubquery = this.txHost.tx
+      .select({
+        topicId: pings.topicId,
+        unreadCount: count(pings.id).as("unread_count"),
+      })
+      .from(pings)
+      .leftJoin(
+        pingReads,
+        and(
+          eq(pingReads.pingId, pings.id),
+          eq(pingReads.spaceMemberId, spaceMemberId),
+        ),
+      )
+      .where(isNull(pingReads.id))
+      .groupBy(pings.topicId)
+      .as("unread_pings");
+
+    const topicResults = await this.txHost.tx
+      .select({
+        id: topics.id,
+        spaceId: topics.spaceId,
+        name: topics.name,
+        slug: topics.slug,
+        emoji: topics.emoji,
+        shortDescription: topics.shortDescription,
+        description: topics.description,
+        createdAt: topics.createdAt,
+        updatedAt: topics.updatedAt,
+        unreadCount: sql`COALESCE(${unreadCountSubquery.unreadCount}, 0)`,
+      })
+      .from(topics)
+      .leftJoin(unreadCountSubquery, eq(topics.id, unreadCountSubquery.topicId))
+      .where(eq(topics.spaceId, spaceId));
+
+    return topicResults.map((topic) => ({
+      ...topic,
+      unreadCount: Number(topic.unreadCount),
+    }));
   }
 
   async checkTopicExistsBySpaceIdAndSlug(

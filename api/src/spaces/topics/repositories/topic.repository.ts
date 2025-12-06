@@ -1,4 +1,8 @@
-import type { CreateTopicData, TopicInfo } from "../types/topics.types";
+import type {
+  CreateTopicData,
+  TopicInfo,
+  TopicWithUnreadCount,
+} from "../types/topics.types";
 
 export abstract class TopicRepository {
   /**
@@ -50,6 +54,17 @@ export abstract class TopicRepository {
     spaceId: string,
     topicId: string,
   ): Promise<boolean>;
+
+  /**
+   * List topics in a space for a member with unread ping counts
+   * @param spaceId - The space identifier
+   * @param spaceMemberId - The space member identifier
+   * @returns The list of topics with unread ping counts
+   */
+  abstract listTopicsBySpaceIdAndSpaceMemberId(
+    spaceId: string,
+    spaceMemberId: string,
+  ): Promise<TopicWithUnreadCount[]>;
 
   /**
    * Delete a topic by id

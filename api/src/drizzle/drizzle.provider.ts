@@ -22,6 +22,19 @@ export const drizzleProvider = [
         connectionString,
       });
 
+      const isDevelopment = configService.isDevelopment;
+
+      if (isDevelopment) {
+        return drizzle(pool, {
+          schema,
+          logger: {
+            logQuery: (query, params) => {
+              console.log("[Drizzle Query]", query, params);
+            },
+          },
+        }) as DrizzleDatabase;
+      }
+
       return drizzle(pool, { schema }) as DrizzleDatabase;
     },
   },

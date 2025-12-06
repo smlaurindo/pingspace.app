@@ -18,3 +18,16 @@ export interface TopicInfo {
   createdAt: Date;
   updatedAt: Date | null;
 }
+
+export interface TopicWithUnreadCount {
+  id: string;
+  spaceId: string;
+  name: string;
+  slug: string;
+  emoji: string;
+  shortDescription: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  unreadCount: number;
+}
