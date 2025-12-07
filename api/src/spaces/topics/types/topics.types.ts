@@ -19,15 +19,13 @@ export interface TopicInfo {
   updatedAt: Date | null;
 }
 
-export interface TopicWithUnreadCount {
+export interface TopicListWithUnreadCountAndLastPingAt {
   id: string;
-  spaceId: string;
   name: string;
   slug: string;
   emoji: string;
   shortDescription: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date | null;
+  isPinned: boolean;
+  lastPingAt: Date | null;
   unreadCount: number;
 }

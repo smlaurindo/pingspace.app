@@ -1,7 +1,7 @@
 import type {
   CreateTopicData,
   TopicInfo,
-  TopicWithUnreadCount,
+  TopicListWithUnreadCountAndLastPingAt,
 } from "../types/topics.types";
 
 export abstract class TopicRepository {
@@ -59,12 +59,12 @@ export abstract class TopicRepository {
    * List topics in a space for a member with unread ping counts
    * @param spaceId - The space identifier
    * @param spaceMemberId - The space member identifier
-   * @returns The list of topics with unread ping counts
+   * @returns The list of topics with unread ping counts and last ping at
    */
   abstract listTopicsBySpaceIdAndSpaceMemberId(
     spaceId: string,
     spaceMemberId: string,
-  ): Promise<TopicWithUnreadCount[]>;
+  ): Promise<TopicListWithUnreadCountAndLastPingAt[]>;
 
   /**
    * Toggle pin status for a topic by id

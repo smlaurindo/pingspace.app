@@ -43,15 +43,13 @@ export type ListTopicsRequest = {
 
 export type ListTopicsResponse = {
   id: string;
-  spaceId: string;
   name: string;
   slug: string;
   emoji: string;
-  unreadCount: number;
   shortDescription: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date | null;
+  isPinned: boolean;
+  lastPingAt: Date | null;
+  unreadCount: number;
 };
 
 export type TogglePinTopicRequest = {

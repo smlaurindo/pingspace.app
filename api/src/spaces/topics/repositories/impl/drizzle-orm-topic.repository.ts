@@ -7,7 +7,7 @@ import { TopicRepository } from "../topic.repository";
 import {
   CreateTopicData,
   TopicInfo,
-  TopicWithUnreadCount,
+  TopicListWithUnreadCountAndLastPingAt,
 } from "../../types/topics.types";
 import { pings, pingReads } from "../../pings/pings.schema";
 
@@ -109,7 +109,7 @@ export class DrizzleORMTopicRepository implements TopicRepository {
   async listTopicsBySpaceIdAndSpaceMemberId(
     spaceId: string,
     spaceMemberId: string,
-  ): Promise<TopicWithUnreadCount[]> {
+  ): Promise<TopicListWithUnreadCountAndLastPingAt[]> {
     const unreadCountSubquery = this.txHost.tx
       .select({
         topicId: pings.topicId,
@@ -127,25 +127,38 @@ export class DrizzleORMTopicRepository implements TopicRepository {
       .groupBy(pings.topicId)
       .as("unread_pings");
 
+    const lastPingSubquery = this.txHost.tx
+      .select({
+        topicId: pings.topicId,
+        lastPingAt: sql<Date>`MAX(${pings.createdAt})`.as("last_ping_at"),
+      })
+      .from(pings)
+      .groupBy(pings.topicId)
+      .as("last_ping");
+
     const topicResults = await this.txHost.tx
       .select({
         id: topics.id,
-        spaceId: topics.spaceId,
         name: topics.name,
         slug: topics.slug,
         emoji: topics.emoji,
         shortDescription: topics.shortDescription,
-        description: topics.description,
-        createdAt: topics.createdAt,
-        updatedAt: topics.updatedAt,
+        isPinned: topics.isPinned,
         unreadCount: sql`COALESCE(${unreadCountSubquery.unreadCount}, 0)`,
+        lastPingAt: lastPingSubquery.lastPingAt,
       })
       .from(topics)
       .leftJoin(unreadCountSubquery, eq(topics.id, unreadCountSubquery.topicId))
-      .where(eq(topics.spaceId, spaceId));
+      .leftJoin(lastPingSubquery, eq(topics.id, lastPingSubquery.topicId))
+      .where(eq(topics.spaceId, spaceId))
+      .orderBy(
+        sql`CASE WHEN ${topics.isPinned} THEN 0 ELSE 1 END`,
+        topics.createdAt,
+      );
 
     return topicResults.map((topic) => ({
       ...topic,
+      lastPingAt: topic.lastPingAt ? new Date(topic.lastPingAt) : null,
       unreadCount: Number(topic.unreadCount),
     }));
   }

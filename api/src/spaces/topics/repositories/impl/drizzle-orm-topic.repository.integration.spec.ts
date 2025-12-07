@@ -80,15 +80,17 @@ describe("DrizzleORMTopicRepository - Integration Tests", () => {
       expect(resultTopic1!.id).toEqual(topic1.id);
       expect(resultTopic1!.name).toEqual(topic1Overrides.name);
       expect(resultTopic1!.slug).toEqual(topic1Overrides.slug);
-      expect(resultTopic1!.spaceId).toEqual(space.id);
       expect(resultTopic1!.unreadCount).toEqual(0);
+      expect(resultTopic1!.lastPingAt).toBeNull();
+      expect(resultTopic1!.isPinned).toEqual(false);
 
       expect(resultTopic2).toBeDefined();
       expect(resultTopic2!.id).toEqual(topic2.id);
       expect(resultTopic2!.name).toEqual(topic2Overrides.name);
       expect(resultTopic2!.slug).toEqual(topic2Overrides.slug);
-      expect(resultTopic2!.spaceId).toEqual(space.id);
       expect(resultTopic2!.unreadCount).toEqual(0);
+      expect(resultTopic2!.lastPingAt).toBeNull();
+      expect(resultTopic2!.isPinned).toEqual(false);
     });
 
     it("should return topics with correct unread ping counts", async () => {
@@ -383,7 +385,6 @@ describe("DrizzleORMTopicRepository - Integration Tests", () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(topicSpace1.id);
       expect(result[0].name).toEqual(topicSpace1Overrides.name);
-      expect(result[0].spaceId).toEqual(space1.id);
       expect(result[0].unreadCount).toEqual(0);
 
       const topicIds = result.map((t) => t.id);
@@ -416,7 +417,6 @@ describe("DrizzleORMTopicRepository - Integration Tests", () => {
         slug: "test-topic",
         emoji: "🚀",
         shortDescription: "A short description",
-        description: "A longer description",
       };
 
       const topic = await createTestTopic(
@@ -436,16 +436,14 @@ describe("DrizzleORMTopicRepository - Integration Tests", () => {
 
       const returnedTopic = result[0];
       expect(returnedTopic.id).toEqual(topic.id);
-      expect(returnedTopic.spaceId).toEqual(space.id);
       expect(returnedTopic.name).toEqual(topicOverrides.name);
       expect(returnedTopic.slug).toEqual(topicOverrides.slug);
       expect(returnedTopic.emoji).toEqual(topicOverrides.emoji);
       expect(returnedTopic.shortDescription).toEqual(
         topicOverrides.shortDescription,
       );
-      expect(returnedTopic.description).toEqual(topicOverrides.description);
-      expect(returnedTopic.createdAt).toBeInstanceOf(Date);
-      expect(returnedTopic.updatedAt).toBeNull();
+      expect(returnedTopic.isPinned).toEqual(false);
+      expect(returnedTopic.lastPingAt).toBeNull();
       expect(returnedTopic.unreadCount).toEqual(0);
     });
 
@@ -501,6 +499,189 @@ describe("DrizzleORMTopicRepository - Integration Tests", () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(topic.id);
       expect(result[0].unreadCount).toEqual(2);
+    });
+
+    it("should return lastPingAt with the timestamp of the most recent ping", async () => {
+      const user = await createTestUser(transactionHost.tx);
+      const { space, owner } = await createTestSpace(transactionHost.tx, {
+        ownerId: user.id,
+      });
+
+      const [topic, apiKey] = await Promise.all([
+        createTestTopic(transactionHost.tx, {
+          spaceId: space.id,
+        }),
+        createTestSpaceApiKey(transactionHost.tx, {
+          spaceId: space.id,
+          spaceMemberId: owner.id,
+        }),
+      ]);
+
+      const oldPingDate = new Date("2025-01-06T10:00:00.000Z");
+      const recentPingDate = new Date("2025-01-07T15:30:00.000Z");
+
+      await transactionHost.tx.insert(schema.pings).values([
+        {
+          apiKeyId: apiKey.id,
+          topicId: topic.id,
+          title: "Old Ping",
+          contentType: "MARKDOWN",
+          content: "Old content",
+          createdAt: oldPingDate,
+        },
+        {
+          apiKeyId: apiKey.id,
+          topicId: topic.id,
+          title: "Recent Ping",
+          contentType: "MARKDOWN",
+          content: "Recent content",
+          createdAt: recentPingDate,
+        },
+      ]);
+
+      const result = await sut.listTopicsBySpaceIdAndSpaceMemberId(
+        space.id,
+        owner.id,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].lastPingAt).toEqual(recentPingDate);
+    });
+
+    it("should order topics with pinned topics first, then by creation date", async () => {
+      const user = await createTestUser(transactionHost.tx);
+      const { space, owner } = await createTestSpace(transactionHost.tx, {
+        ownerId: user.id,
+      });
+
+      const topic1 = await createTestTopic(
+        transactionHost.tx,
+        { spaceId: space.id },
+        { name: "First Topic (unpinned)" },
+      );
+
+      const topic2 = await createTestTopic(
+        transactionHost.tx,
+        { spaceId: space.id },
+        { name: "Second Topic (pinned)" },
+      );
+
+      const topic3 = await createTestTopic(
+        transactionHost.tx,
+        { spaceId: space.id },
+        { name: "Third Topic (unpinned)" },
+      );
+
+      const topic4 = await createTestTopic(
+        transactionHost.tx,
+        { spaceId: space.id },
+        { name: "Fourth Topic (pinned)" },
+      );
+
+      await sut.togglePinTopicById(topic2.id);
+      await sut.togglePinTopicById(topic4.id);
+
+      const result = await sut.listTopicsBySpaceIdAndSpaceMemberId(
+        space.id,
+        owner.id,
+      );
+
+      expect(result).toHaveLength(4);
+
+      expect(result[0].id).toEqual(topic2.id);
+      expect(result[0].isPinned).toEqual(true);
+
+      expect(result[1].id).toEqual(topic4.id);
+      expect(result[1].isPinned).toEqual(true);
+
+      expect(result[2].id).toEqual(topic1.id);
+      expect(result[2].isPinned).toEqual(false);
+
+      expect(result[3].id).toEqual(topic3.id);
+      expect(result[3].isPinned).toEqual(false);
+    });
+
+    it("should return null lastPingAt for topics with no pings", async () => {
+      const user = await createTestUser(transactionHost.tx);
+      const { space, owner } = await createTestSpace(transactionHost.tx, {
+        ownerId: user.id,
+      });
+
+      const topicWithoutPings = await createTestTopic(transactionHost.tx, {
+        spaceId: space.id,
+      });
+
+      const result = await sut.listTopicsBySpaceIdAndSpaceMemberId(
+        space.id,
+        owner.id,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toEqual(topicWithoutPings.id);
+      expect(result[0].lastPingAt).toBeNull();
+      expect(result[0].unreadCount).toEqual(0);
+    });
+
+    it("should return different lastPingAt for different topics", async () => {
+      const user = await createTestUser(transactionHost.tx);
+      const { space, owner } = await createTestSpace(transactionHost.tx, {
+        ownerId: user.id,
+      });
+
+      const [topic1, topic2, apiKey] = await Promise.all([
+        createTestTopic(transactionHost.tx, { spaceId: space.id }),
+        createTestTopic(transactionHost.tx, { spaceId: space.id }),
+        createTestSpaceApiKey(transactionHost.tx, {
+          spaceId: space.id,
+          spaceMemberId: owner.id,
+        }),
+      ]);
+
+      const topic1LastPing = new Date("2025-01-01T10:00:00.000Z");
+      const topic2LastPing = new Date("2025-01-07T18:45:00.000Z");
+
+      await transactionHost.tx.insert(schema.pings).values([
+        {
+          apiKeyId: apiKey.id,
+          topicId: topic1.id,
+          title: "Ping 1",
+          contentType: "MARKDOWN",
+          content: "Content",
+          createdAt: new Date("2025-01-01T08:00:00.000Z"),
+        },
+        {
+          apiKeyId: apiKey.id,
+          topicId: topic1.id,
+          title: "Ping 2",
+          contentType: "MARKDOWN",
+          content: "Content",
+          createdAt: topic1LastPing,
+        },
+        {
+          apiKeyId: apiKey.id,
+          topicId: topic2.id,
+          title: "Ping 3",
+          contentType: "MARKDOWN",
+          content: "Content",
+          createdAt: topic2LastPing,
+        },
+      ]);
+
+      const result = await sut.listTopicsBySpaceIdAndSpaceMemberId(
+        space.id,
+        owner.id,
+      );
+
+      expect(result).toHaveLength(2);
+
+      const resultTopic1 = result.find((t) => t.id === topic1.id);
+      const resultTopic2 = result.find((t) => t.id === topic2.id);
+
+      expect(resultTopic1).toBeDefined();
+      expect(resultTopic1!.lastPingAt).toEqual(topic1LastPing);
+
+      expect(resultTopic2).toBeDefined();
+      expect(resultTopic2!.lastPingAt).toEqual(topic2LastPing);
     });
   });
 });
