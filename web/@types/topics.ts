@@ -18,6 +18,7 @@ export type GetTopicResponse = {
   emoji: string;
   shortDescription: string;
   description: string | null;
+  isPinned: boolean;
   createdAt: string;
   updatedAt: string | null;
 };
