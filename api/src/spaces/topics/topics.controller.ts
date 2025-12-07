@@ -62,6 +62,11 @@ const listTopicsParamSchema = z.object({
   spaceId: z.cuid2("Invalid spaceId"),
 });
 
+const togglePinTopicParamSchema = z.object({
+  spaceId: z.cuid2("Invalid spaceId"),
+  topicId: z.cuid2("Invalid topicId"),
+});
+
 const createTopicSchemaValidationPipe = new ZodValidationPipe(
   createTopicSchema,
 );
@@ -70,8 +75,13 @@ const listTopicsParamSchemaValidationPipe = new ZodValidationPipe(
   listTopicsParamSchema,
 );
 
+const togglePinTopicParamSchemaValidationPipe = new ZodValidationPipe(
+  togglePinTopicParamSchema,
+);
+
 type CreateTopicRequestBody = z.infer<typeof createTopicSchema>;
 type ListTopicsRequestParam = z.infer<typeof listTopicsParamSchema>;
+type TogglePinTopicRequestParam = z.infer<typeof togglePinTopicParamSchema>;
 
 @Controller()
 @UseFilters(new TopicsExceptionFilter())
@@ -120,6 +130,25 @@ export class TopicsController {
     });
 
     return reply.status(HttpStatus.OK).send(topic);
+  }
+
+  @Post("/v1/spaces/:spaceId/topics/:topicId/pin")
+  async togglePinTopic(
+    @Param(togglePinTopicParamSchemaValidationPipe)
+    params: TogglePinTopicRequestParam,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { spaceId, topicId } = params;
+    const { sub } = jwt;
+
+    const { isPinned } = await this.topicsService.togglePinTopic({
+      spaceId,
+      topicId,
+      userId: sub,
+    });
+
+    return reply.status(HttpStatus.OK).send({ isPinned });
   }
 
   @Get("/v1/spaces/:spaceId/topics")

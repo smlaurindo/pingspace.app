@@ -176,6 +176,19 @@ export class DrizzleORMTopicRepository implements TopicRepository {
     return !!result;
   }
 
+  async togglePinTopicById(topicId: string): Promise<boolean> {
+    const [result] = await this.txHost.tx
+      .update(topics)
+      .set({
+        isPinned: sql`NOT ${topics.isPinned}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(topics.id, topicId))
+      .returning({ isPinned: topics.isPinned });
+
+    return result.isPinned;
+  }
+
   async deleteTopicById(topicId: string): Promise<void> {
     await this.txHost.tx.delete(topics).where(eq(topics.id, topicId));
   }

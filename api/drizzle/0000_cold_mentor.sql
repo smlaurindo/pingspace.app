@@ -63,6 +63,7 @@ CREATE TABLE "topics" (
 	"slug" text NOT NULL,
 	"short_description" text NOT NULL,
 	"description" text,
+	"is_pinned" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	CONSTRAINT "topics_pk_id" PRIMARY KEY("id")

@@ -1,10 +1,10 @@
 {
-  "id": "ef78d8dd-2818-4037-a533-078f74376925",
+  "id": "6fc9575d-4f85-4c9c-9fa0-8e7ef57cdcea",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "users": {
+    "public.users": {
       "name": "users",
       "schema": "",
       "columns": {
@@ -69,7 +69,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "space_api_keys": {
+    "public.space_api_keys": {
       "name": "space_api_keys",
       "schema": "",
       "columns": {
@@ -163,6 +163,32 @@
         }
       },
       "foreignKeys": {
+        "space_api_keys_space_id_spaces_id_fk": {
+          "name": "space_api_keys_space_id_spaces_id_fk",
+          "tableFrom": "space_api_keys",
+          "tableTo": "spaces",
+          "columnsFrom": [
+            "space_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "space_api_keys_created_by_space_members_id_fk": {
+          "name": "space_api_keys_created_by_space_members_id_fk",
+          "tableFrom": "space_api_keys",
+          "tableTo": "space_members",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "space_api_keys_fk_space": {
           "name": "space_api_keys_fk_space",
           "tableFrom": "space_api_keys",
@@ -203,7 +229,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "space_members": {
+    "public.space_members": {
       "name": "space_members",
       "schema": "",
       "columns": {
@@ -243,6 +269,32 @@
       },
       "indexes": {},
       "foreignKeys": {
+        "space_members_space_id_spaces_id_fk": {
+          "name": "space_members_space_id_spaces_id_fk",
+          "tableFrom": "space_members",
+          "tableTo": "spaces",
+          "columnsFrom": [
+            "space_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "space_members_member_id_users_id_fk": {
+          "name": "space_members_member_id_users_id_fk",
+          "tableFrom": "space_members",
+          "tableTo": "users",
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "space_members_fk_space": {
           "name": "space_members_fk_space",
           "tableFrom": "space_members",
@@ -292,7 +344,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "spaces": {
+    "public.spaces": {
       "name": "spaces",
       "schema": "",
       "columns": {
@@ -379,6 +431,19 @@
         }
       },
       "foreignKeys": {
+        "spaces_owner_id_users_id_fk": {
+          "name": "spaces_owner_id_users_id_fk",
+          "tableFrom": "spaces",
+          "tableTo": "users",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "spaces_fk_user": {
           "name": "spaces_fk_user",
           "tableFrom": "spaces",
@@ -414,7 +479,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "topic_tags": {
+    "public.topic_tags": {
       "name": "topic_tags",
       "schema": "",
       "columns": {
@@ -483,6 +548,19 @@
         }
       },
       "foreignKeys": {
+        "topic_tags_topic_id_topics_id_fk": {
+          "name": "topic_tags_topic_id_topics_id_fk",
+          "tableFrom": "topic_tags",
+          "tableTo": "topics",
+          "columnsFrom": [
+            "topic_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "topic_tags_fk_topic": {
           "name": "topic_tags_fk_topic",
           "tableFrom": "topic_tags",
@@ -519,7 +597,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "topics": {
+    "public.topics": {
       "name": "topics",
       "schema": "",
       "columns": {
@@ -564,6 +642,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "is_pinned": {
+          "name": "is_pinned",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -618,6 +703,19 @@
         }
       },
       "foreignKeys": {
+        "topics_space_id_spaces_id_fk": {
+          "name": "topics_space_id_spaces_id_fk",
+          "tableFrom": "topics",
+          "tableTo": "spaces",
+          "columnsFrom": [
+            "space_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "topics_fk_space": {
           "name": "topics_fk_space",
           "tableFrom": "topics",
@@ -645,7 +743,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ping_actions": {
+    "public.ping_actions": {
       "name": "ping_actions",
       "schema": "",
       "columns": {
@@ -723,6 +821,19 @@
         }
       },
       "foreignKeys": {
+        "ping_actions_ping_id_pings_id_fk": {
+          "name": "ping_actions_ping_id_pings_id_fk",
+          "tableFrom": "ping_actions",
+          "tableTo": "pings",
+          "columnsFrom": [
+            "ping_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "ping_actions_fk_ping": {
           "name": "ping_actions_fk_ping",
           "tableFrom": "ping_actions",
@@ -750,7 +861,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ping_reads": {
+    "public.ping_reads": {
       "name": "ping_reads",
       "schema": "",
       "columns": {
@@ -820,6 +931,32 @@
         }
       },
       "foreignKeys": {
+        "ping_reads_space_member_id_space_members_id_fk": {
+          "name": "ping_reads_space_member_id_space_members_id_fk",
+          "tableFrom": "ping_reads",
+          "tableTo": "space_members",
+          "columnsFrom": [
+            "space_member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ping_reads_ping_id_pings_id_fk": {
+          "name": "ping_reads_ping_id_pings_id_fk",
+          "tableFrom": "ping_reads",
+          "tableTo": "pings",
+          "columnsFrom": [
+            "ping_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "ping_reads_fk_ping": {
           "name": "ping_reads_fk_ping",
           "tableFrom": "ping_reads",
@@ -869,7 +1006,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "pings_topic_tags": {
+    "public.pings_topic_tags": {
       "name": "pings_topic_tags",
       "schema": "",
       "columns": {
@@ -926,6 +1063,32 @@
         }
       },
       "foreignKeys": {
+        "pings_topic_tags_ping_id_pings_id_fk": {
+          "name": "pings_topic_tags_ping_id_pings_id_fk",
+          "tableFrom": "pings_topic_tags",
+          "tableTo": "pings",
+          "columnsFrom": [
+            "ping_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pings_topic_tags_tag_id_topic_tags_id_fk": {
+          "name": "pings_topic_tags_tag_id_topic_tags_id_fk",
+          "tableFrom": "pings_topic_tags",
+          "tableTo": "topic_tags",
+          "columnsFrom": [
+            "tag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "pings_topic_tags_fk_ping": {
           "name": "pings_topic_tags_fk_ping",
           "tableFrom": "pings_topic_tags",
@@ -976,7 +1139,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "pings": {
+    "public.pings": {
       "name": "pings",
       "schema": "",
       "columns": {
@@ -1063,6 +1226,32 @@
         }
       },
       "foreignKeys": {
+        "pings_api_key_id_space_api_keys_id_fk": {
+          "name": "pings_api_key_id_space_api_keys_id_fk",
+          "tableFrom": "pings",
+          "tableTo": "space_api_keys",
+          "columnsFrom": [
+            "api_key_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pings_topic_id_topics_id_fk": {
+          "name": "pings_topic_id_topics_id_fk",
+          "tableFrom": "pings",
+          "tableTo": "topics",
+          "columnsFrom": [
+            "topic_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "pings_fk_topic": {
           "name": "pings_fk_topic",
           "tableFrom": "pings",
@@ -1105,8 +1294,9 @@
     }
   },
   "enums": {
-    "space_member_role": {
+    "public.space_member_role": {
       "name": "space_member_role",
+      "schema": "public",
       "values": [
         "OWNER",
         "ADMIN",

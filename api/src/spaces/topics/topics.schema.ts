@@ -9,6 +9,7 @@ import {
   unique,
 } from "drizzle-orm/pg-core";
 import { spaces } from "../spaces.schema";
+import { boolean } from "drizzle-orm/pg-core";
 
 export const topics = pgTable(
   "topics",
@@ -24,6 +25,7 @@ export const topics = pgTable(
     slug: text("slug").notNull(),
     shortDescription: text("short_description").notNull(),
     description: text("description"),
+    isPinned: boolean("is_pinned").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .notNull()
       .defaultNow(),

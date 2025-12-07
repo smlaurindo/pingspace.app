@@ -17,6 +17,8 @@ import type {
   GetTopicResponse,
   ListTopicsRequest,
   ListTopicsResponse,
+  TogglePinTopicRequest,
+  TogglePinTopicResponse,
 } from "./types/topics.dto";
 import { TopicNotFoundException } from "../exceptions/topic-not-found.exception";
 
@@ -161,6 +163,53 @@ export class TopicsService {
       spaceId,
       spaceMember.id,
     );
+  }
+
+  @Transactional()
+  async togglePinTopic(
+    request: TogglePinTopicRequest,
+  ): Promise<TogglePinTopicResponse> {
+    const { spaceId, topicId, userId } = request;
+
+    const [spaceExists, spaceMember, topicExists] = await Promise.all([
+      this.spaceRepository.checkSpaceExistsById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
+      this.topicRepository.checkTopicExistsBySpaceIdAndId(spaceId, topicId),
+    ]);
+
+    if (!spaceExists) {
+      throw new SpaceNotFoundException(spaceId);
+    }
+
+    if (!spaceMember) {
+      throw new UnauthorizedSpaceAccessException(
+        spaceId,
+        "You must be a member of the space to pin or unpin topics.",
+      );
+    }
+
+    const isSpaceMemberAllowedToPinOrUnpinTopics =
+      spaceMember.role === SPACE_ROLE_OWNER ||
+      spaceMember.role === SPACE_ROLE_ADMIN;
+
+    if (!isSpaceMemberAllowedToPinOrUnpinTopics) {
+      throw new InsufficientSpacePermissionsException(
+        spaceId,
+        ["OWNER", "ADMIN"],
+        "pin or unpin topics.",
+      );
+    }
+
+    if (!topicExists) {
+      throw new TopicNotFoundException(topicId);
+    }
+
+    const isPinned = await this.topicRepository.togglePinTopicById(topicId);
+
+    return { isPinned };
   }
 
   @Transactional()

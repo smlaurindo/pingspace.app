@@ -67,6 +67,13 @@ export abstract class TopicRepository {
   ): Promise<TopicWithUnreadCount[]>;
 
   /**
+   * Toggle pin status for a topic by id
+   * @param topicId - The topic identifier
+   * @returns The new pin status
+   */
+  abstract togglePinTopicById(topicId: string): Promise<boolean>;
+
+  /**
    * Delete a topic by id
    * @param topicId - The topic identifier
    */

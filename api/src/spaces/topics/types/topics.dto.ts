@@ -53,3 +53,13 @@ export type ListTopicsResponse = {
   createdAt: Date;
   updatedAt: Date | null;
 };
+
+export type TogglePinTopicRequest = {
+  spaceId: string;
+  topicId: string;
+  userId: string;
+};
+
+export type TogglePinTopicResponse = {
+  isPinned: boolean;
+};
