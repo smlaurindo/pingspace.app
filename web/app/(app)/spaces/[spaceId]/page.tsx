@@ -3,13 +3,29 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronLeftIcon, CirclePlusIcon, KeySquareIcon, LogOutIcon, TextAlignJustifyIcon as MenuIcon, PinIcon, UsersRoundIcon } from "lucide-react";
+import { cn, formatRelativeDate } from "@/lib/utils";
+import { useListTopicsQuery } from "@/queries/topics";
+import { ChevronLeftIcon, CirclePlusIcon, CircleX, KeySquareIcon, Loader2Icon, LogOutIcon, TextAlignJustifyIcon as MenuIcon, PinIcon, RotateCcwIcon, ShapesIcon, UsersRoundIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { type PointerEvent } from "react";
+import type { PointerEvent } from "react";
 
 export default function SpacePage() {
   const { spaceId } = useParams() as { spaceId: string };
   const router = useRouter();
+
+  const {
+    data: topics,
+    isLoading,
+    isRefetching,
+    isError,
+    refetch,
+    isRefetchError,
+  } = useListTopicsQuery(spaceId);
+
+  const mustShowLoading = isLoading || isRefetching;
+  const mustShowError = (isError || isRefetchError) && !mustShowLoading;
+  const mustShowEmptyPlaceholder = !mustShowLoading && Array.isArray(topics) && topics.length === 0;
+  const mustShowData = !mustShowLoading && !mustShowEmptyPlaceholder && !mustShowError && Array.isArray(topics) && topics.length > 0;
 
   function handleOpenTopicMenuOptions(e: PointerEvent<HTMLDivElement>, topicId: string) {
     let timer: NodeJS.Timeout;
@@ -101,78 +117,87 @@ export default function SpacePage() {
         </DropdownMenu>
       </header>
 
-      <main className="flex-1 flex flex-col">
-        <div className="divide-y divide-border dark:divide-border/50">
-          <div
-            className="flex items-center justify-between px-4 py-3 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50"
-            onPointerDown={e => handleOpenTopicMenuOptions(e, "1")}
-            onClick={() => handleOpenTopic("1")}
-            style={{ touchAction: "manipulation" }}
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <p className="self-start">🆕</p>
-              <div className="flex flex-col min-w-0">
-                <h2 className="text-lg font-semibold truncate leading-tight">New Users</h2>
-                <p className="text-sm text-muted-foreground truncate">
-                  Pings related to new user registrations.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col items-end">
-              <span className="text-sm text-nowrap">2:35 PM</span>
-              <div className="flex items-center gap-1">
-                <span className="flex items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold size-fit p-0.5">
-                  9290
-                </span>
-                <PinIcon className="size-4 text-muted-foreground" />
-              </div>
-            </div>
+      <main className="flex flex-col flex-1">
+        {mustShowLoading && (
+          <div className="flex flex-col flex-1 items-center justify-center">
+            <Loader2Icon className="size-6 animate-spin text-primary" />
           </div>
-          <div
-            className="flex items-center justify-between px-4 py-3 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50"
-            onPointerDown={e => handleOpenTopicMenuOptions(e, "2")}
-            onClick={() => handleOpenTopic("2")}
-            style={{ touchAction: "manipulation" }}
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <p className="self-start">🔵</p>
-              <div className="flex flex-col min-w-0">
-                <h2 className="text-lg font-semibold truncate leading-tight">Deployment Pings</h2>
-                <p className="text-sm text-muted-foreground truncate">
-                  Pings related to deployment status and health checks.
-                </p>
-              </div>
+        )}
+        {mustShowError && (
+          <div className="flex flex-col flex-1 items-center justify-center gap-4">
+            <div className="bg-muted rounded-full p-6">
+              <CircleX className="size-12 text-destructive" />
             </div>
-            <div className="flex flex-col items-end">
-              <span className="text-sm text-nowrap">5:35 PM</span>
-              <span className="flex items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold size-fit p-0.5">
-                2
-              </span>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <h2 className="text-xl font-semibold">Error loading Topics</h2>
+              <p className="text-sm text-muted-foreground text-center">
+                Unable to load Topics
+              </p>
             </div>
+            <Button variant="outline" onClick={() => refetch({})}>
+              <RotateCcwIcon className="size-4" />
+              Try again
+            </Button>
           </div>
-          <div
-            className="flex items-center justify-between px-4 py-3 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50"
-            onPointerDown={e => handleOpenTopicMenuOptions(e, "3")}
-            onClick={() => handleOpenTopic("3")}
-            style={{ touchAction: "manipulation" }}
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <p className="self-start">💰</p>
-              <div className="flex flex-col min-w-0">
-                <h2 className="text-lg font-semibold truncate leading-tight">New Subscriptions</h2>
-                <p className="text-sm text-muted-foreground truncate">
-                  Pings related to user subscriptions and billing.
-                </p>
-              </div>
+        )}
+        {mustShowEmptyPlaceholder && (
+          <div className="flex flex-col flex-1 items-center justify-center gap-4">
+            <div className="bg-muted rounded-full p-6">
+              <ShapesIcon className="size-12 text-muted-foreground" />
             </div>
-            <div className="flex flex-col items-end">
-              <span className="text-sm text-nowrap">10:00 AM</span>
-              <span className="flex items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold size-fit p-0.5">
-                5
-              </span>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <h2 className="text-xl font-semibold">No Topics created</h2>
+              <p className="text-sm text-muted-foreground text-center">
+                Create your first Topic to start using the Space.
+              </p>
             </div>
+            <Button className="gap-2" onClick={() => router.push(`/spaces/${spaceId}/topics/create`)}>
+              <CirclePlusIcon className="size-4" />
+              New Topic
+            </Button>
           </div>
-        </div>
+        )}
+        {mustShowData && (
+          <div className="divide-y divide-border dark:divide-border/50">
+            {topics.map(topic => (
+              <div
+                role="button"
+                key={topic.id}
+                className="flex items-center justify-between px-4 py-3 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50"
+                onPointerDown={e => handleOpenTopicMenuOptions(e, topic.id)}
+                onClick={() => handleOpenTopic(topic.id)}
+                style={{ touchAction: "manipulation" }}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="self-start">{topic.emoji}</p>
+                  <div className="flex flex-col min-w-0">
+                    <h2 className="text-lg font-semibold truncate leading-tight">{topic.name}</h2>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {topic.shortDescription}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span
+                    className="text-sm text-nowrap"
+                    title={topic.lastPingAt ? new Date(topic.lastPingAt).toISOString() : undefined}
+                  >
+                    {topic.lastPingAt ? formatRelativeDate(topic.lastPingAt) : ""}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className={cn(
+                      "flex items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold size-fit p-0.5 px-2",
+                      topic.unreadCount === 0 && "opacity-0"
+                    )}>
+                      {topic.unreadCount}
+                    </span>
+                    {topic.isPinned && <PinIcon className="size-4 text-muted-foreground" />}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

@@ -2,6 +2,7 @@ import { CreateTopicRequest } from "@/@types/topics";
 import { createTopic } from "@/api/create-topic";
 import { deleteTopic } from "@/api/delete-topic";
 import { getTopic } from "@/api/get-topic";
+import { listTopics } from "@/api/list-topics";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateTopicMutation(spaceId: string) {
@@ -28,5 +29,12 @@ export function useDeleteTopicMutation() {
         queryKey: ["topics", variables.spaceId, variables.topicId],
       });
     },
+  });
+}
+
+export function useListTopicsQuery(spaceId: string) {
+  return useQuery({
+    queryKey: ["topics", spaceId],
+    queryFn: () => listTopics(spaceId),
   });
 }

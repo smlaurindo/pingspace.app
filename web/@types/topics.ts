@@ -21,3 +21,14 @@ export type GetTopicResponse = {
   createdAt: string;
   updatedAt: string | null;
 };
+
+export type ListTopicsResponse = {
+  id: string;
+  name: string;
+  slug: string;
+  emoji: string;
+  shortDescription: string;
+  isPinned: boolean;
+  lastPingAt: string | null;
+  unreadCount: number;
+};
