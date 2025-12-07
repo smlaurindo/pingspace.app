@@ -14,12 +14,14 @@ import type { FastifyReply } from "fastify";
 import type { UserPayload } from "@/@types/user-jwt-payload";
 import { ZodValidationPipe } from "@/shared/pipes/zod-validation.pipe";
 import { AuthenticationPrincipal } from "@/shared/decorators/authentication-principal.decorator";
-import { ZodCUIDParameterValidationPipe } from "@/shared/pipes/zod-cuid-validation.pipe";
 import { TopicsService } from "./topics.service";
 import { TopicsExceptionFilter } from "./topics.filter";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+const createTopicParamSchema = z.object({
+  spaceId: z.cuid2("Invalid format"),
+});
 const createTopicSchema = z.object({
   name: z
     .string()
@@ -57,31 +59,41 @@ const createTopicSchema = z.object({
     )
     .optional(),
 });
-
+const getTopicParamSchema = z.object({
+  spaceId: z.cuid2("Invalid format"),
+  topicId: z.cuid2("Invalid format"),
+});
 const listTopicsParamSchema = z.object({
-  spaceId: z.cuid2("Invalid spaceId"),
+  spaceId: z.cuid2("Invalid format"),
 });
-
 const togglePinTopicParamSchema = z.object({
-  spaceId: z.cuid2("Invalid spaceId"),
-  topicId: z.cuid2("Invalid topicId"),
+  spaceId: z.cuid2("Invalid format"),
+  topicId: z.cuid2("Invalid format"),
+});
+const deleteTopicParamSchema = z.object({
+  spaceId: z.cuid2("Invalid format"),
+  topicId: z.cuid2("Invalid format"),
 });
 
-const createTopicSchemaValidationPipe = new ZodValidationPipe(
-  createTopicSchema,
+const createTopicParamSchemaPipe = new ZodValidationPipe(
+  createTopicParamSchema,
 );
-
-const listTopicsParamSchemaValidationPipe = new ZodValidationPipe(
-  listTopicsParamSchema,
-);
-
-const togglePinTopicParamSchemaValidationPipe = new ZodValidationPipe(
+const createTopicSchemaPipe = new ZodValidationPipe(createTopicSchema);
+const getTopicParamSchemaPipe = new ZodValidationPipe(getTopicParamSchema);
+const listTopicsParamSchemaPipe = new ZodValidationPipe(listTopicsParamSchema);
+const togglePinTopicParamSchemaPipe = new ZodValidationPipe(
   togglePinTopicParamSchema,
 );
+const deleteTopicParamSchemaPipe = new ZodValidationPipe(
+  deleteTopicParamSchema,
+);
 
+type CreateTopicRequestParam = z.infer<typeof createTopicParamSchema>;
 type CreateTopicRequestBody = z.infer<typeof createTopicSchema>;
+type GetTopicRequestParam = z.infer<typeof getTopicParamSchema>;
 type ListTopicsRequestParam = z.infer<typeof listTopicsParamSchema>;
 type TogglePinTopicRequestParam = z.infer<typeof togglePinTopicParamSchema>;
+type DeleteTopicRequestParam = z.infer<typeof deleteTopicParamSchema>;
 
 @Controller()
 @UseFilters(new TopicsExceptionFilter())
@@ -90,11 +102,12 @@ export class TopicsController {
 
   @Post("/v1/spaces/:spaceId/topics")
   async createTopic(
-    @Param("spaceId") spaceId: string,
-    @Body(createTopicSchemaValidationPipe) body: CreateTopicRequestBody,
+    @Param(createTopicParamSchemaPipe) params: CreateTopicRequestParam,
+    @Body(createTopicSchemaPipe) body: CreateTopicRequestBody,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
+    const { spaceId } = params;
     const { sub } = jwt;
     const { name, emoji, shortDescription, description, slug } = body;
 
@@ -116,11 +129,11 @@ export class TopicsController {
 
   @Get("/v1/spaces/:spaceId/topics/:topicId")
   async getTopic(
-    @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
-    @Param("topicId", ZodCUIDParameterValidationPipe) topicId: string,
+    @Param(getTopicParamSchemaPipe) params: GetTopicRequestParam,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
+    const { spaceId, topicId } = params;
     const { sub } = jwt;
 
     const topic = await this.topicsService.getTopic({
@@ -129,13 +142,12 @@ export class TopicsController {
       userId: sub,
     });
 
-    return reply.status(HttpStatus.OK).send(topic);
+    reply.status(HttpStatus.OK).send(topic);
   }
 
   @Post("/v1/spaces/:spaceId/topics/:topicId/pin")
   async togglePinTopic(
-    @Param(togglePinTopicParamSchemaValidationPipe)
-    params: TogglePinTopicRequestParam,
+    @Param(togglePinTopicParamSchemaPipe) params: TogglePinTopicRequestParam,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
@@ -148,12 +160,12 @@ export class TopicsController {
       userId: sub,
     });
 
-    return reply.status(HttpStatus.OK).send({ isPinned });
+    reply.status(HttpStatus.OK).send({ isPinned });
   }
 
   @Get("/v1/spaces/:spaceId/topics")
   async listTopics(
-    @Param(listTopicsParamSchemaValidationPipe) params: ListTopicsRequestParam,
+    @Param(listTopicsParamSchemaPipe) params: ListTopicsRequestParam,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
@@ -165,16 +177,16 @@ export class TopicsController {
       userId: sub,
     });
 
-    return reply.status(HttpStatus.OK).send(topics);
+    reply.status(HttpStatus.OK).send(topics);
   }
 
   @Delete("/v1/spaces/:spaceId/topics/:topicId")
   async deleteTopic(
-    @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
-    @Param("topicId", ZodCUIDParameterValidationPipe) topicId: string,
+    @Param(deleteTopicParamSchemaPipe) params: DeleteTopicRequestParam,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
+    const { spaceId, topicId } = params;
     const { sub } = jwt;
 
     await this.topicsService.deleteTopic({
