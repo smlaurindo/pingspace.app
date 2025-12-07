@@ -17,7 +17,6 @@ import { AuthenticationPrincipal } from "@/shared/decorators/authentication-prin
 import type { UserPayload } from "@/@types/user-jwt-payload";
 import { SpacesService } from "./spaces.service";
 import { SpacesExceptionFilter } from "./spaces.filter";
-import { ZodCUIDParameterValidationPipe } from "@/shared/pipes/zod-cuid-validation.pipe";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -58,13 +57,12 @@ const createSpaceSchema = z.object({
     )
     .optional(),
 });
-
-const createSpaceSchemaValidationPipe = new ZodValidationPipe(
-  createSpaceSchema,
-);
-
-type CreateSpaceRequestBody = z.infer<typeof createSpaceSchema>;
-
+const deleteSpaceParamSchema = z.object({
+  spaceId: z.cuid2("Invalid format"),
+});
+const createSpaceApiKeyParamSchema = z.object({
+  spaceId: z.cuid2("Invalid format"),
+});
 const createSpaceApiKeySchema = z.object({
   name: z
     .string()
@@ -77,24 +75,40 @@ const createSpaceApiKeySchema = z.object({
     .optional()
     .transform((val) => val?.trim() || undefined),
 });
-
-const createSpaceApiKeyValidationPipe = new ZodValidationPipe(
-  createSpaceApiKeySchema,
-);
-
-type CreateSpaceApiKeyRequestBody = z.infer<typeof createSpaceApiKeySchema>;
-
+const listSpaceApiKeysParamSchema = z.object({
+  spaceId: z.cuid2("Invalid format"),
+});
 const listSpaceApiKeysQuerySchema = z.object({
   cursor: z.string().optional(),
   type: z.enum(["ACTIVE", "INACTIVE"]).optional().default("ACTIVE"),
   limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
-const listSpaceApiKeysQueryValidationPipe = new ZodValidationPipe(
+const createSpaceSchemaPipe = new ZodValidationPipe(createSpaceSchema);
+const deleteSpaceParamSchemaPipe = new ZodValidationPipe(
+  deleteSpaceParamSchema,
+);
+const createSpaceApiKeyParamSchemaPipe = new ZodValidationPipe(
+  createSpaceApiKeyParamSchema,
+);
+const createSpaceApiKeySchemaPipe = new ZodValidationPipe(
+  createSpaceApiKeySchema,
+);
+const listSpaceApiKeysParamSchemaPipe = new ZodValidationPipe(
+  listSpaceApiKeysParamSchema,
+);
+const listSpaceApiKeysQuerySchemaPipe = new ZodValidationPipe(
   listSpaceApiKeysQuerySchema,
 );
 
-type ListSpaceApiKeysQuery = z.infer<typeof listSpaceApiKeysQuerySchema>;
+type CreateSpaceRequestBody = z.infer<typeof createSpaceSchema>;
+type CreateSpaceApiKeyRequestBody = z.infer<typeof createSpaceApiKeySchema>;
+type DeleteSpaceRequestParam = z.infer<typeof deleteSpaceParamSchema>;
+type CreateSpaceApiKeyRequestParam = z.infer<
+  typeof createSpaceApiKeyParamSchema
+>;
+type ListSpaceApiKeysRequestParam = z.infer<typeof listSpaceApiKeysParamSchema>;
+type ListSpaceApiKeysRequestQuery = z.infer<typeof listSpaceApiKeysQuerySchema>;
 
 @Controller()
 @UseFilters(new SpacesExceptionFilter())
@@ -103,7 +117,7 @@ export class SpacesController {
 
   @Post("/v1/spaces")
   async createSpace(
-    @Body(createSpaceSchemaValidationPipe) body: CreateSpaceRequestBody,
+    @Body(createSpaceSchemaPipe) body: CreateSpaceRequestBody,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
@@ -126,10 +140,11 @@ export class SpacesController {
 
   @Delete("/v1/spaces/:spaceId")
   async deleteSpace(
-    @Param("spaceId") spaceId: string,
+    @Param(deleteSpaceParamSchemaPipe) params: DeleteSpaceRequestParam,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
+    const { spaceId } = params;
     const { sub } = jwt;
 
     await this.spacesService.deleteSpaceById({
@@ -142,13 +157,15 @@ export class SpacesController {
 
   @Post("/v1/spaces/:spaceId/api-keys")
   async createSpaceApiKey(
-    @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
-    @Body(createSpaceApiKeyValidationPipe) body: CreateSpaceApiKeyRequestBody,
+    @Param(createSpaceApiKeyParamSchemaPipe)
+    params: CreateSpaceApiKeyRequestParam,
+    @Body(createSpaceApiKeySchemaPipe) body: CreateSpaceApiKeyRequestBody,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
-    const { sub } = jwt;
+    const { spaceId } = params;
     const { name, description } = body;
+    const { sub } = jwt;
 
     const apiKey = await this.spacesService.createApiKey({
       name,
@@ -157,18 +174,20 @@ export class SpacesController {
       userId: sub,
     });
 
-    return reply.status(HttpStatus.CREATED).send(apiKey);
+    reply.status(HttpStatus.CREATED).send(apiKey);
   }
 
   @Get("/v1/spaces/:spaceId/api-keys")
   async listSpaceApiKeys(
-    @Param("spaceId", ZodCUIDParameterValidationPipe) spaceId: string,
-    @Query(listSpaceApiKeysQueryValidationPipe) query: ListSpaceApiKeysQuery,
+    @Param(listSpaceApiKeysParamSchemaPipe)
+    params: ListSpaceApiKeysRequestParam,
+    @Query(listSpaceApiKeysQuerySchemaPipe) query: ListSpaceApiKeysRequestQuery,
     @AuthenticationPrincipal() jwt: UserPayload,
     @Res() reply: FastifyReply,
   ) {
-    const { sub } = jwt;
+    const { spaceId } = params;
     const { cursor, limit, type } = query;
+    const { sub } = jwt;
 
     const result = await this.spacesService.listApiKeys({
       spaceId,
@@ -178,6 +197,6 @@ export class SpacesController {
       type,
     });
 
-    return reply.status(HttpStatus.OK).send(result);
+    reply.status(HttpStatus.OK).send(result);
   }
 }
