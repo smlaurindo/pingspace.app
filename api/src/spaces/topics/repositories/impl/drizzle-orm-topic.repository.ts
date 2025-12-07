@@ -41,35 +41,12 @@ export class DrizzleORMTopicRepository implements TopicRepository {
         emoji: topics.emoji,
         shortDescription: topics.shortDescription,
         description: topics.description,
+        isPinned: topics.isPinned,
         createdAt: topics.createdAt,
         updatedAt: topics.updatedAt,
       })
       .from(topics)
       .where(and(eq(topics.spaceId, spaceId), eq(topics.slug, slug)))
-      .limit(1);
-
-    if (!topic) {
-      return null;
-    }
-
-    return topic;
-  }
-
-  async findBySlug(slug: string): Promise<TopicInfo | null> {
-    const [topic] = await this.txHost.tx
-      .select({
-        id: topics.id,
-        spaceId: topics.spaceId,
-        name: topics.name,
-        slug: topics.slug,
-        emoji: topics.emoji,
-        shortDescription: topics.shortDescription,
-        description: topics.description,
-        createdAt: topics.createdAt,
-        updatedAt: topics.updatedAt,
-      })
-      .from(topics)
-      .where(eq(topics.slug, slug))
       .limit(1);
 
     if (!topic) {
@@ -92,6 +69,7 @@ export class DrizzleORMTopicRepository implements TopicRepository {
         emoji: topics.emoji,
         shortDescription: topics.shortDescription,
         description: topics.description,
+        isPinned: topics.isPinned,
         createdAt: topics.createdAt,
         updatedAt: topics.updatedAt,
       })

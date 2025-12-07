@@ -15,6 +15,7 @@ export interface TopicInfo {
   emoji: string;
   shortDescription: string;
   description: string | null;
+  isPinned: boolean;
   createdAt: Date;
   updatedAt: Date | null;
 }
