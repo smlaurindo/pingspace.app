@@ -57,3 +57,9 @@ export type ListSpaceApiKeysResponse = {
     limit: number;
   };
 };
+
+export type UpdateSpacePinRequest = {
+  spaceId: string;
+  userId: string;
+  pinned: boolean;
+};

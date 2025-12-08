@@ -11,6 +11,7 @@ import { InsufficientSpacePermissionsException } from "./exceptions/insufficient
 import { UnauthorizedSpaceAccessException } from "./exceptions/unauthorized-space-access.exception";
 import { SPACE_ROLE_ADMIN, SPACE_ROLE_OWNER } from "./spaces.schema";
 import { SpaceApiKeyRepository } from "./repositories/space-api-key.repository";
+import { SpacePinRepository } from "./repositories/space-pin.repository";
 import type {
   CreateSpaceApiKeyRequest,
   CreateSpaceApiKeyResponse,
@@ -19,6 +20,7 @@ import type {
   DeleteSpaceRequest,
   ListSpaceApiKeysRequest,
   ListSpaceApiKeysResponse,
+  UpdateSpacePinRequest,
 } from "./types/spaces.dto";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
 
@@ -28,6 +30,7 @@ export class SpacesService {
     private readonly spaceRepository: SpaceRepository,
     private readonly spaceMemberRepository: SpaceMemberRepository,
     private readonly spaceApiKeyRepository: SpaceApiKeyRepository,
+    private readonly spacePinRepository: SpacePinRepository,
     private readonly configService: ConfigService,
   ) {}
 
@@ -202,5 +205,29 @@ export class SpacesService {
     }
 
     return result;
+  }
+
+  @Transactional()
+  async updateSpacePin(request: UpdateSpacePinRequest): Promise<void> {
+    const { spaceId, userId, pinned } = request;
+
+    const [spaceExists, spaceMember] = await Promise.all([
+      this.spaceRepository.checkSpaceExistsById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
+    ]);
+
+    if (!spaceExists) throw new SpaceNotFoundException(spaceId);
+
+    if (!spaceMember) {
+      throw new UnauthorizedSpaceAccessException(
+        spaceId,
+        "You must be a member of the space to pin it.",
+      );
+    }
+
+    await this.spacePinRepository.upsertSpacePin(spaceId, userId, pinned);
   }
 }

@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Res,
   UseFilters,
@@ -100,6 +101,14 @@ const listSpaceApiKeysParamSchemaPipe = new ZodValidationPipe(
 const listSpaceApiKeysQuerySchemaPipe = new ZodValidationPipe(
   listSpaceApiKeysQuerySchema,
 );
+const pinSpaceSchema = z.object({
+  pinned: z.boolean(),
+});
+const pinSpaceParamSchema = z.object({
+  spaceId: z.cuid2("Invalid format"),
+});
+const pinSpaceSchemaPipe = new ZodValidationPipe(pinSpaceSchema);
+const pinSpaceParamSchemaPipe = new ZodValidationPipe(pinSpaceParamSchema);
 
 type CreateSpaceRequestBody = z.infer<typeof createSpaceSchema>;
 type CreateSpaceApiKeyRequestBody = z.infer<typeof createSpaceApiKeySchema>;
@@ -109,6 +118,8 @@ type CreateSpaceApiKeyRequestParam = z.infer<
 >;
 type ListSpaceApiKeysRequestParam = z.infer<typeof listSpaceApiKeysParamSchema>;
 type ListSpaceApiKeysRequestQuery = z.infer<typeof listSpaceApiKeysQuerySchema>;
+type PinSpaceRequestBody = z.infer<typeof pinSpaceSchema>;
+type PinSpaceRequestParam = z.infer<typeof pinSpaceParamSchema>;
 
 @Controller()
 @UseFilters(new SpacesExceptionFilter())
@@ -198,5 +209,25 @@ export class SpacesController {
     });
 
     reply.status(HttpStatus.OK).send(result);
+  }
+
+  @Put("/v1/spaces/:spaceId/pin")
+  async pinSpace(
+    @Param(pinSpaceParamSchemaPipe) params: PinSpaceRequestParam,
+    @Body(pinSpaceSchemaPipe) body: PinSpaceRequestBody,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { spaceId } = params;
+    const { pinned } = body;
+    const { sub } = jwt;
+
+    await this.spacesService.updateSpacePin({
+      spaceId,
+      userId: sub,
+      pinned,
+    });
+
+    reply.status(HttpStatus.OK).send({ pinned });
   }
 }

@@ -1,6 +1,7 @@
 import { users } from "@/auth/users.schema";
 import { createId } from "@paralleldrive/cuid2";
 import {
+  boolean,
   foreignKey,
   index,
   pgEnum,
@@ -136,5 +137,45 @@ export const spaceApiKeys = pgTable(
       .onUpdate("no action"),
     index("space_api_keys_idx_fk_space").on(table.spaceId),
     index("space_api_keys_idx_fk_space_member").on(table.createdBy),
+  ],
+);
+
+export const spacePins = pgTable(
+  "space_pins",
+  {
+    id: text("id")
+      .$defaultFn(() => createId())
+      .notNull(),
+    spaceId: text("space_id")
+      .notNull()
+      .references(() => spaces.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    pinned: boolean("pinned").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }),
+  },
+  (table) => [
+    primaryKey({ name: "space_pins_pk_id", columns: [table.id] }),
+    foreignKey({
+      name: "space_pins_fk_space",
+      columns: [table.spaceId],
+      foreignColumns: [spaces.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("no action"),
+    foreignKey({
+      name: "space_pins_fk_user",
+      columns: [table.userId],
+      foreignColumns: [users.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("no action"),
+    unique("space_pins_unique_space_user").on(table.spaceId, table.userId),
+    index("space_pins_idx_fk_space").on(table.spaceId),
+    index("space_pins_idx_fk_user").on(table.userId),
   ],
 );

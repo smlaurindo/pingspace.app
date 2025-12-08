@@ -8,6 +8,8 @@ import { SpaceRepository } from "./repositories/space.repository";
 import { DrizzleORMSpaceRepository } from "./repositories/impl/drizzle-orm-space.repository";
 import { SpaceApiKeyRepository } from "./repositories/space-api-key.repository";
 import { DrizzleORMSpaceApiKeyRepository } from "./repositories/impl/drizzle-orm-space-api-key.repository";
+import { SpacePinRepository } from "./repositories/space-pin.repository";
+import { DrizzleORMRepositorySpacePin } from "./repositories/impl/drizzle-orm-space-pin.repository";
 import { SpaceApiKeyGuard } from "./guards/space-api-key.guard";
 
 @Module({
@@ -26,6 +28,10 @@ import { SpaceApiKeyGuard } from "./guards/space-api-key.guard";
     {
       provide: SpaceRepository,
       useClass: DrizzleORMSpaceRepository,
+    },
+    {
+      provide: SpacePinRepository,
+      useClass: DrizzleORMRepositorySpacePin,
     },
     SpaceApiKeyGuard,
   ],
