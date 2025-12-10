@@ -1,5 +1,5 @@
-import { createId } from "@paralleldrive/cuid2";
-import { unique } from "drizzle-orm/pg-core";
+import { v7 as uuidv7 } from "uuid";
+import { unique, uuid } from "drizzle-orm/pg-core";
 import {
   foreignKey,
   index,
@@ -14,16 +14,16 @@ import { spaceApiKeys, spaceMembers } from "../../spaces.schema";
 export const pings = pgTable(
   "pings",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
     title: text("title").notNull(),
     contentType: text("content_type", { enum: ["MARKDOWN", "JSON"] }).notNull(),
     content: text("content").notNull(),
-    apiKeyId: text("api_key_id")
+    apiKeyId: uuid("api_key_id")
       .notNull()
       .references(() => spaceApiKeys.id),
-    topicId: text("topic_id")
+    topicId: uuid("topic_id")
       .notNull()
       .references(() => topics.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -55,8 +55,8 @@ export const pings = pgTable(
 export const pingActions = pgTable(
   "ping_actions",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
     type: text("type", { enum: ["HTTP", "LINK"] }).notNull(),
     label: text("label").notNull(),
@@ -64,7 +64,7 @@ export const pingActions = pgTable(
     method: text("method", { enum: ["GET", "POST", "PATCH", "PUT", "DELETE"] }),
     headers: text("headers"),
     body: text("body"),
-    pingId: text("ping_id")
+    pingId: uuid("ping_id")
       .notNull()
       .references(() => pings.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -87,10 +87,10 @@ export const pingActions = pgTable(
 export const pingTags = pgTable(
   "pings_topic_tags",
   {
-    pingId: text("ping_id")
+    pingId: uuid("ping_id")
       .notNull()
       .references(() => pings.id),
-    tagId: text("tag_id")
+    tagId: uuid("tag_id")
       .notNull()
       .references(() => topicTags.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -125,8 +125,8 @@ export const pingTags = pgTable(
 export const pingReads = pgTable(
   "ping_reads",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
     timestamp: timestamp("timestamp", {
       precision: 0,
@@ -135,10 +135,10 @@ export const pingReads = pgTable(
     })
       .notNull()
       .defaultNow(),
-    spaceMemberId: text("space_member_id")
+    spaceMemberId: uuid("space_member_id")
       .references(() => spaceMembers.id)
       .notNull(),
-    pingId: text("ping_id")
+    pingId: uuid("ping_id")
       .notNull()
       .references(() => pings.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })

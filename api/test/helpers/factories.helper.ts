@@ -1,9 +1,9 @@
-import { createId } from "@paralleldrive/cuid2";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "@/drizzle/schema";
 import { hash } from "bcrypt";
 import { and, eq, InferInsertModel } from "drizzle-orm";
 import { faker } from "@faker-js/faker";
+import { v7 as uuidv7 } from "uuid";
 
 type TestDatabase = NodePgDatabase<typeof schema>;
 
@@ -49,8 +49,8 @@ export async function createTestSpace(
     Omit<InferInsertModel<typeof schema.spaces>, "ownerId">
   > = {},
 ) {
-  const name = overrides.name || `Test Space ${createId()}`;
-  const slug = overrides.slug || `test-space-${createId()}`;
+  const name = overrides.name || `Test Space ${uuidv7()}`;
+  const slug = overrides.slug || `test-space-${uuidv7()}`;
   const shortDescription =
     overrides.shortDescription || faker.lorem.sentence({ min: 3, max: 5 });
   const description = overrides.description || faker.lorem.words(10);
@@ -155,7 +155,7 @@ export async function createTestSpaceApiKey(
 ) {
   const name = overrides.name || faker.lorem.word(5);
   const description = overrides.description || faker.lorem.words(5);
-  const rawSecret = createId();
+  const rawSecret = uuidv7();
   const secretHash = await hash(rawSecret, 6);
 
   const [apiKey] = await db

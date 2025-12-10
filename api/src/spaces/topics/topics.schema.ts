@@ -1,4 +1,4 @@
-import { createId } from "@paralleldrive/cuid2";
+import { v7 as uuidv7 } from "uuid";
 import {
   foreignKey,
   index,
@@ -7,17 +7,18 @@ import {
   text,
   timestamp,
   unique,
+  uuid,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { spaces } from "../spaces.schema";
-import { boolean } from "drizzle-orm/pg-core";
 
 export const topics = pgTable(
   "topics",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
-    spaceId: text("space_id")
+    spaceId: uuid("space_id")
       .notNull()
       .references(() => spaces.id),
     name: text("name").notNull(),
@@ -48,11 +49,11 @@ export const topics = pgTable(
 export const topicTags = pgTable(
   "topic_tags",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
     name: text("name").notNull(),
-    topicId: text("topic_id")
+    topicId: uuid("topic_id")
       .notNull()
       .references(() => topics.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })

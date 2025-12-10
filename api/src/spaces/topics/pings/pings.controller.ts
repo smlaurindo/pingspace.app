@@ -95,8 +95,8 @@ const createPingParamsSchema = z.object({
 });
 
 const listPingsParamsSchema = z.object({
-  spaceId: z.cuid2("Invalid space ID format"),
-  topicId: z.cuid2("Invalid topic ID format"),
+  spaceId: z.uuidv7("Invalid format"),
+  topicId: z.uuidv7("Invalid format"),
 });
 
 const listPingsQuerySchema = z.object({
@@ -110,8 +110,8 @@ const listPingsQuerySchema = z.object({
 });
 
 const markPingsAsReadParamsSchema = z.object({
-  spaceId: z.cuid2("Invalid space ID format"),
-  topicId: z.cuid2("Invalid topic ID format"),
+  spaceId: z.uuidv7("Invalid format"),
+  topicId: z.uuidv7("Invalid format"),
 });
 
 const markPingsAsReadBodySchema = z

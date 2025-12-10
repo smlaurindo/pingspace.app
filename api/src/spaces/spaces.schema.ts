@@ -1,5 +1,5 @@
 import { users } from "@/auth/users.schema";
-import { createId } from "@paralleldrive/cuid2";
+import { v7 as uuidv7 } from "uuid";
 import {
   boolean,
   foreignKey,
@@ -10,19 +10,20 @@ import {
   text,
   timestamp,
   unique,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 export const spaces = pgTable(
   "spaces",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     shortDescription: text("short_description").notNull(),
     description: text("description"),
-    ownerId: text("owner_id").references(() => users.id),
+    ownerId: uuid("owner_id").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .notNull()
       .defaultNow(),
@@ -55,13 +56,13 @@ export const spaceMemberRole = pgEnum("space_member_role", [
 export const spaceMembers = pgTable(
   "space_members",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
-    spaceId: text("space_id")
+    spaceId: uuid("space_id")
       .references(() => spaces.id)
       .notNull(),
-    memberId: text("member_id")
+    memberId: uuid("member_id")
       .references(() => users.id)
       .notNull(),
     role: spaceMemberRole("role").notNull().default(SPACE_ROLE_MEMBER),
@@ -99,8 +100,8 @@ export const spaceMembers = pgTable(
 export const spaceApiKeys = pgTable(
   "space_api_keys",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
     keyHash: text("key_hash").notNull(),
     name: text("name").notNull(),
@@ -108,10 +109,10 @@ export const spaceApiKeys = pgTable(
     status: text("status", { enum: ["ACTIVE", "INACTIVE"] })
       .notNull()
       .default("ACTIVE"),
-    spaceId: text("space_id")
+    spaceId: uuid("space_id")
       .notNull()
       .references(() => spaces.id),
-    createdBy: text("created_by")
+    createdBy: uuid("created_by")
       .notNull()
       .references(() => spaceMembers.id),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -143,13 +144,13 @@ export const spaceApiKeys = pgTable(
 export const spacePins = pgTable(
   "space_pins",
   {
-    id: text("id")
-      .$defaultFn(() => createId())
+    id: uuid("id")
+      .$defaultFn(() => uuidv7())
       .notNull(),
-    spaceId: text("space_id")
+    spaceId: uuid("space_id")
       .notNull()
       .references(() => spaces.id),
-    userId: text("user_id")
+    userId: uuid("user_id")
       .notNull()
       .references(() => users.id),
     pinned: boolean("pinned").notNull().default(false),

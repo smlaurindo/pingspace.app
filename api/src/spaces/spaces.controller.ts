@@ -59,10 +59,10 @@ const createSpaceSchema = z.object({
     .optional(),
 });
 const deleteSpaceParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
 });
 const createSpaceApiKeyParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
 });
 const createSpaceApiKeySchema = z.object({
   name: z
@@ -77,7 +77,7 @@ const createSpaceApiKeySchema = z.object({
     .transform((val) => val?.trim() || undefined),
 });
 const listSpaceApiKeysParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
 });
 const listSpaceApiKeysQuerySchema = z.object({
   cursor: z.string().optional(),
@@ -105,7 +105,7 @@ const pinSpaceSchema = z.object({
   pinned: z.boolean(),
 });
 const pinSpaceParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
 });
 const pinSpaceSchemaPipe = new ZodValidationPipe(pinSpaceSchema);
 const pinSpaceParamSchemaPipe = new ZodValidationPipe(pinSpaceParamSchema);

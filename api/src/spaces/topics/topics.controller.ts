@@ -20,7 +20,7 @@ import { TopicsExceptionFilter } from "./topics.filter";
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const createTopicParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
 });
 const createTopicSchema = z.object({
   name: z
@@ -60,19 +60,19 @@ const createTopicSchema = z.object({
     .optional(),
 });
 const getTopicParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
-  topicId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
+  topicId: z.uuidv7("Invalid format"),
 });
 const listTopicsParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
 });
 const togglePinTopicParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
-  topicId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
+  topicId: z.uuidv7("Invalid format"),
 });
 const deleteTopicParamSchema = z.object({
-  spaceId: z.cuid2("Invalid format"),
-  topicId: z.cuid2("Invalid format"),
+  spaceId: z.uuidv7("Invalid format"),
+  topicId: z.uuidv7("Invalid format"),
 });
 
 const createTopicParamSchemaPipe = new ZodValidationPipe(
