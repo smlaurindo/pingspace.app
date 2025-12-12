@@ -58,6 +58,15 @@ const createSpaceSchema = z.object({
     )
     .optional(),
 });
+const listSpacesQuerySchema = z.object({
+  cursor: z.uuidv7().optional(),
+  limit: z.coerce
+    .number("must be a number")
+    .int("must be an integer")
+    .min(1)
+    .max(100)
+    .default(10),
+});
 const deleteSpaceParamSchema = z.object({
   spaceId: z.uuidv7("Invalid format"),
 });
@@ -86,6 +95,7 @@ const listSpaceApiKeysQuerySchema = z.object({
 });
 
 const createSpaceSchemaPipe = new ZodValidationPipe(createSpaceSchema);
+const listSpacesQuerySchemaPipe = new ZodValidationPipe(listSpacesQuerySchema);
 const deleteSpaceParamSchemaPipe = new ZodValidationPipe(
   deleteSpaceParamSchema,
 );
@@ -111,6 +121,7 @@ const pinSpaceSchemaPipe = new ZodValidationPipe(pinSpaceSchema);
 const pinSpaceParamSchemaPipe = new ZodValidationPipe(pinSpaceParamSchema);
 
 type CreateSpaceRequestBody = z.infer<typeof createSpaceSchema>;
+type ListSpacesRequestQuery = z.infer<typeof listSpacesQuerySchema>;
 type CreateSpaceApiKeyRequestBody = z.infer<typeof createSpaceApiKeySchema>;
 type DeleteSpaceRequestParam = z.infer<typeof deleteSpaceParamSchema>;
 type CreateSpaceApiKeyRequestParam = z.infer<
@@ -147,6 +158,24 @@ export class SpacesController {
       .status(HttpStatus.CREATED)
       .header("Location", `/v1/spaces/${spaceId}`)
       .send({ spaceId });
+  }
+
+  @Get("/v1/spaces")
+  async listSpaces(
+    @Query(listSpacesQuerySchemaPipe) query: ListSpacesRequestQuery,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { cursor, limit } = query;
+    const { sub } = jwt;
+
+    const result = await this.spacesService.listSpaces({
+      userId: sub,
+      cursor,
+      limit,
+    });
+
+    reply.status(HttpStatus.OK).send(result);
   }
 
   @Delete("/v1/spaces/:spaceId")

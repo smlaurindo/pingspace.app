@@ -20,6 +20,8 @@ import type {
   DeleteSpaceRequest,
   ListSpaceApiKeysRequest,
   ListSpaceApiKeysResponse,
+  ListSpacesRequest,
+  ListSpacesResponse,
   UpdateSpacePinRequest,
 } from "./types/spaces.dto";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
@@ -69,6 +71,17 @@ export class SpacesService {
     });
 
     return { spaceId };
+  }
+
+  @Transactional<TransactionalAdapterDrizzleORM>({ accessMode: "read only" })
+  async listSpaces(request: ListSpacesRequest): Promise<ListSpacesResponse> {
+    const { cursor, limit, userId } = request;
+
+    return await this.spaceRepository.listSpaces({
+      memberId: userId,
+      cursor,
+      limit,
+    });
   }
 
   @Transactional()

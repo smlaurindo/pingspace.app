@@ -67,3 +67,25 @@ export type PaginatedSpaceApiKeys = {
     limit: number;
   };
 };
+
+export type ListSpacesQuery = {
+  memberId: string;
+  cursor?: string;
+  limit: number;
+};
+
+export type PaginatedSpacesWithLastPingAtAndUnreadCount = {
+  items: {
+    id: string;
+    name: string;
+    shortDescription: string;
+    isPinned: boolean;
+    lastPingAt: Date | null;
+    unreadCount: number;
+  }[];
+  pagination: {
+    nextCursor: string | null;
+    hasNextPage: boolean;
+    limit: number;
+  };
+};

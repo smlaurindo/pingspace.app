@@ -63,3 +63,25 @@ export type UpdateSpacePinRequest = {
   userId: string;
   pinned: boolean;
 };
+
+export type ListSpacesRequest = {
+  userId: string;
+  cursor?: string;
+  limit: number;
+};
+
+export type ListSpacesResponse = {
+  items: {
+    id: string;
+    name: string;
+    shortDescription: string;
+    isPinned: boolean;
+    lastPingAt: Date | null;
+    unreadCount: number;
+  }[];
+  pagination: {
+    nextCursor: string | null;
+    hasNextPage: boolean;
+    limit: number;
+  };
+};

@@ -1,4 +1,8 @@
-import { CreateSpaceData } from "../types/spaces.types";
+import {
+  CreateSpaceData,
+  ListSpacesQuery,
+  PaginatedSpacesWithLastPingAtAndUnreadCount,
+} from "../types/spaces.types";
 
 export abstract class SpaceRepository {
   /**
@@ -21,6 +25,15 @@ export abstract class SpaceRepository {
    * @returns The created space ID
    */
   abstract createSpace(data: CreateSpaceData): Promise<string>;
+
+  /**
+   * List spaces for a member with pagination
+   * @param query - The list spaces query
+   * @returns A paginated list of spaces with last ping at and unread count
+   */
+  abstract listSpaces(
+    query: ListSpacesQuery,
+  ): Promise<PaginatedSpacesWithLastPingAtAndUnreadCount>;
 
   /**
    * Delete a space by ID

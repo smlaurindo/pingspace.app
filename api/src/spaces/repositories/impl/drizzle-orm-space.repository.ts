@@ -1,10 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { eq } from "drizzle-orm";
+import { and, count, desc, eq, isNull, max, sql } from "drizzle-orm";
 import { TransactionHost } from "@nestjs-cls/transactional";
 import { TransactionalAdapterDrizzleORM } from "@/drizzle/drizzle.provider";
-import { spaces } from "@/spaces/spaces.schema";
+import { spaces, spaceMembers, spacePins } from "../../spaces.schema";
+import { topics } from "../../topics/topics.schema";
+import { pings, pingReads } from "../../topics/pings/pings.schema";
 import { SpaceRepository } from "../space.repository";
-import { CreateSpaceData } from "@/spaces/types/spaces.types";
+import {
+  CreateSpaceData,
+  ListSpacesQuery,
+  PaginatedSpacesWithLastPingAtAndUnreadCount,
+} from "../../types/spaces.types";
 
 @Injectable()
 export class DrizzleORMSpaceRepository implements SpaceRepository {
@@ -47,6 +53,94 @@ export class DrizzleORMSpaceRepository implements SpaceRepository {
       .returning({ spaceId: spaces.id });
 
     return spaceId;
+  }
+
+  async listSpaces({
+    memberId,
+    cursor,
+    limit,
+  }: ListSpacesQuery): Promise<PaginatedSpacesWithLastPingAtAndUnreadCount> {
+    const conditions = [eq(spaceMembers.memberId, memberId)];
+
+    if (cursor) {
+      conditions.push(sql`${spaces.id} < ${cursor}`);
+    }
+
+    const unreadCountSubquery = this.txHost.tx
+      .select({
+        spaceId: topics.spaceId,
+        unreadCount: count(pings.id).as("unread_count"),
+      })
+      .from(pings)
+      .innerJoin(topics, eq(topics.id, pings.topicId))
+      .innerJoin(spaceMembers, eq(spaceMembers.spaceId, topics.spaceId))
+      .leftJoin(
+        pingReads,
+        and(
+          eq(pingReads.pingId, pings.id),
+          eq(pingReads.spaceMemberId, spaceMembers.id),
+        ),
+      )
+      .where(and(eq(spaceMembers.memberId, memberId), isNull(pingReads.id)))
+      .groupBy(topics.spaceId)
+      .as("unread_counts");
+
+    const lastPingSubquery = this.txHost.tx
+      .select({
+        spaceId: topics.spaceId,
+        lastPingAt: max(pings.createdAt).as("last_ping_at"),
+      })
+      .from(pings)
+      .innerJoin(topics, eq(topics.id, pings.topicId))
+      .groupBy(topics.spaceId)
+      .as("last_pings");
+
+    const order = [
+      desc(sql`COALESCE(${spacePins.pinned}, false)`),
+      sql`${lastPingSubquery.lastPingAt} DESC NULLS LAST`,
+      desc(spaces.id),
+    ];
+
+    const results = await this.txHost.tx
+      .select({
+        id: spaces.id,
+        name: spaces.name,
+        shortDescription: spaces.shortDescription,
+        isPinned: sql<boolean>`COALESCE(${spacePins.pinned}, false)`,
+        lastPingAt: lastPingSubquery.lastPingAt,
+        unreadCount: sql<number>`COALESCE(${unreadCountSubquery.unreadCount}, 0)`,
+      })
+      .from(spaces)
+      .innerJoin(spaceMembers, eq(spaceMembers.spaceId, spaces.id))
+      .leftJoin(
+        spacePins,
+        and(eq(spacePins.spaceId, spaces.id), eq(spacePins.userId, memberId)),
+      )
+      .leftJoin(unreadCountSubquery, eq(unreadCountSubquery.spaceId, spaces.id))
+      .leftJoin(lastPingSubquery, eq(lastPingSubquery.spaceId, spaces.id))
+      .where(and(...conditions))
+      .orderBy(...order)
+      .limit(limit + 1);
+
+    const hasNextPage = results.length > limit;
+    const items = results.slice(0, limit);
+    const nextCursor = hasNextPage ? items[items.length - 1].id : null;
+
+    return {
+      items: items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        shortDescription: item.shortDescription,
+        isPinned: item.isPinned,
+        lastPingAt: item.lastPingAt,
+        unreadCount: Number(item.unreadCount),
+      })),
+      pagination: {
+        nextCursor,
+        hasNextPage,
+        limit,
+      },
+    };
   }
 
   async deleteSpaceById(spaceId: string): Promise<void> {
