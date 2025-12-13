@@ -13,6 +13,7 @@
 ### Space CRUD
 
 - [x] 🟣 POST /v1/spaces (Create space)
+- [x] 🟣 GET /v1/spaces (List spaces the user is a member of)
 - [ ] 🟣 PUT /v1/spaces (Edit space)
 - [x] 🟣 DELETE /v1/spaces/:spaceId (Delete space)
 
@@ -26,7 +27,7 @@
 ### Space Topics Management
 
 - [x] 🟣 POST /v1/spaces/:spaceId/topics (Create topic)
-- [ ] 🟣 GET /v1/spaces/:spaceId/topics (List space topics)
+- [x] 🟣 GET /v1/spaces/:spaceId/topics (List space topics)
 - [x] 🟣 GET /v1/spaces/:spaceId/topics/:topicId (Get topic info)
 - [ ] 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/subscribe (Subscribe to topic for messages/notifications)
 - [ ] 🟣 PATCH /v1/spaces/:spaceId/topics/:topicId/unsubscribe (Unsubscribe from topic to stop receiving messages/notifications)
@@ -60,6 +61,5 @@
 ## User Actions
 
 - [ ] 🟣 GET /me/topics (List topics the user is subscribed to)
-- [ ] 🟣 GET /me/spaces (List spaces the user is a member of)
 - [ ] 🟣 PUT /me (Update user information)
 - [ ] 🟣 DELETE /me/delete (Delete account)
