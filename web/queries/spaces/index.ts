@@ -1,8 +1,18 @@
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { createSpace } from "@/api/create-space";
-import { useMutation } from "@tanstack/react-query";
+import { listSpaces } from "@/api/list-spaces";
 
 export function useCreateSpaceMutation() {
   return useMutation({
     mutationFn: createSpace,
+  });
+}
+
+export function useListSpacesInfiniteQuery(limit: number = 20) {
+  return useInfiniteQuery({
+    queryKey: ["spaces", { limit }],
+    queryFn: ({ pageParam }) => listSpaces({ cursor: pageParam, limit }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.pagination.nextCursor ?? undefined,
   });
 }
