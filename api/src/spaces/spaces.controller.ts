@@ -67,6 +67,10 @@ const listSpacesQuerySchema = z.object({
     .max(100)
     .default(10),
 });
+const getSpaceParamSchema = z.object({
+  spaceId: z.uuidv7("Invalid format"),
+});
+
 const deleteSpaceParamSchema = z.object({
   spaceId: z.uuidv7("Invalid format"),
 });
@@ -96,6 +100,7 @@ const listSpaceApiKeysQuerySchema = z.object({
 
 const createSpaceSchemaPipe = new ZodValidationPipe(createSpaceSchema);
 const listSpacesQuerySchemaPipe = new ZodValidationPipe(listSpacesQuerySchema);
+const getSpaceParamSchemaPipe = new ZodValidationPipe(getSpaceParamSchema);
 const deleteSpaceParamSchemaPipe = new ZodValidationPipe(
   deleteSpaceParamSchema,
 );
@@ -122,6 +127,7 @@ const pinSpaceParamSchemaPipe = new ZodValidationPipe(pinSpaceParamSchema);
 
 type CreateSpaceRequestBody = z.infer<typeof createSpaceSchema>;
 type ListSpacesRequestQuery = z.infer<typeof listSpacesQuerySchema>;
+type GetSpaceRequestParam = z.infer<typeof getSpaceParamSchema>;
 type CreateSpaceApiKeyRequestBody = z.infer<typeof createSpaceApiKeySchema>;
 type DeleteSpaceRequestParam = z.infer<typeof deleteSpaceParamSchema>;
 type CreateSpaceApiKeyRequestParam = z.infer<
@@ -176,6 +182,23 @@ export class SpacesController {
     });
 
     reply.status(HttpStatus.OK).send(result);
+  }
+
+  @Get("/v1/spaces/:spaceId")
+  async getSpace(
+    @Param(getSpaceParamSchemaPipe) params: GetSpaceRequestParam,
+    @AuthenticationPrincipal() jwt: UserPayload,
+    @Res() reply: FastifyReply,
+  ) {
+    const { spaceId } = params;
+    const { sub } = jwt;
+
+    const space = await this.spacesService.getSpace({
+      spaceId,
+      userId: sub,
+    });
+
+    reply.status(HttpStatus.OK).send(space);
   }
 
   @Delete("/v1/spaces/:spaceId")

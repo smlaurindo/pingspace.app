@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn, formatRelativeDate } from "@/lib/utils";
+import { useGetSpaceQuery } from "@/queries/spaces";
 import { useListTopicsQuery } from "@/queries/topics";
 import { ChevronLeftIcon, CirclePlusIcon, CircleX, KeySquareIcon, Loader2Icon, LogOutIcon, TextAlignJustifyIcon as MenuIcon, PinIcon, RotateCcwIcon, ShapesIcon, UsersRoundIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -14,18 +15,27 @@ export default function SpacePage() {
   const router = useRouter();
 
   const {
+    data: space,
+    isLoading: isSpaceLoading,
+    isError: isSpaceError,
+  } = useGetSpaceQuery(spaceId);
+
+  const {
     data: topics,
-    isLoading,
-    isRefetching,
-    isError,
-    refetch,
-    isRefetchError,
+    isLoading: isTopicsLoading,
+    isRefetching: isTopicsRefetching,
+    isError: isTopicsError,
+    refetch: refetchTopics,
+    isRefetchError: isTopicsRefetchError,
   } = useListTopicsQuery(spaceId);
 
-  const mustShowLoading = isLoading || isRefetching;
-  const mustShowError = (isError || isRefetchError) && !mustShowLoading;
-  const mustShowEmptyPlaceholder = !mustShowLoading && Array.isArray(topics) && topics.length === 0;
-  const mustShowData = !mustShowLoading && !mustShowEmptyPlaceholder && !mustShowError && Array.isArray(topics) && topics.length > 0;
+  const mustShowSpaceLoading = isSpaceLoading || isSpaceError;
+  const mustShowSpaceData = !mustShowSpaceLoading && !!space;
+
+  const mustShowTopicsLoading = isTopicsLoading || isTopicsRefetching;
+  const mustShowTopicsError = (isTopicsError || isTopicsRefetchError) && !mustShowTopicsLoading;
+  const mustShowTopicsEmptyPlaceholder = !mustShowTopicsLoading && Array.isArray(topics) && topics.length === 0;
+  const mustShowTopicsData = !mustShowTopicsLoading && !mustShowTopicsEmptyPlaceholder && !mustShowTopicsError && Array.isArray(topics) && topics.length > 0;
 
   function handleOpenTopicMenuOptions(e: PointerEvent<HTMLDivElement>, topicId: string) {
     let timer: NodeJS.Timeout;
@@ -59,16 +69,29 @@ export default function SpacePage() {
           >
             <ChevronLeftIcon className="size-5" aria-hidden="true" />
           </Button>
+
           <div className="flex items-center gap-2 min-w-0 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 rounded-md" onClick={handleOpenSpaceDetails}>
-            <Avatar className="size-10">
-              <AvatarImage />
-              <AvatarFallback>S</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col min-w-0">
-              <h2 className="text-base font-semibold truncate leading-tight">SaaS</h2>
-              <p className="text-sm text-muted-foreground truncate">2 members</p>
-            </div>
+            {mustShowSpaceLoading && (
+              <div className="flex flex-col flex-1 items-center justify-center">
+                <Loader2Icon className="size-5 animate-spin text-primary" />
+              </div>
+            )}
+            {mustShowSpaceData && (
+              <>
+                <Avatar className="size-10">
+                  <AvatarImage />
+                  <AvatarFallback>{space.name.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col min-w-0">
+                  <h2 className="text-base font-semibold truncate leading-tight">{space.name}</h2>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {space.memberCount} {space.memberCount === 1 ? "member" : "members"}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
+
         </div>
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
@@ -118,12 +141,12 @@ export default function SpacePage() {
       </header>
 
       <main className="flex flex-col flex-1">
-        {mustShowLoading && (
+        {mustShowTopicsLoading && (
           <div className="flex flex-col flex-1 items-center justify-center">
             <Loader2Icon className="size-6 animate-spin text-primary" />
           </div>
         )}
-        {mustShowError && (
+        {mustShowTopicsError && (
           <div className="flex flex-col flex-1 items-center justify-center gap-4">
             <div className="bg-muted rounded-full p-6">
               <CircleX className="size-12 text-destructive" />
@@ -134,13 +157,13 @@ export default function SpacePage() {
                 Unable to load Topics
               </p>
             </div>
-            <Button variant="outline" onClick={() => refetch({})}>
+            <Button variant="outline" onClick={() => refetchTopics({})}>
               <RotateCcwIcon className="size-4" />
               Try again
             </Button>
           </div>
         )}
-        {mustShowEmptyPlaceholder && (
+        {mustShowTopicsEmptyPlaceholder && (
           <div className="flex flex-col flex-1 items-center justify-center gap-4">
             <div className="bg-muted rounded-full p-6">
               <ShapesIcon className="size-12 text-muted-foreground" />
@@ -157,7 +180,7 @@ export default function SpacePage() {
             </Button>
           </div>
         )}
-        {mustShowData && (
+        {mustShowTopicsData && (
           <div className="divide-y divide-border dark:divide-border/50">
             {topics.map(topic => (
               <div

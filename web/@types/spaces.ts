@@ -29,3 +29,16 @@ export type ListSpacesResponse = {
     limit: number;
   };
 };
+
+export type GetSpaceRequest = {
+  spaceId: string;
+}
+
+export type GetSpaceResponse = {
+  id: string;
+  name: string;
+  shortDescription: string;
+  description: string | null;
+  slug: string;
+  memberCount: number;
+}

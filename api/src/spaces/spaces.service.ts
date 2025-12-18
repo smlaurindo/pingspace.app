@@ -18,6 +18,8 @@ import type {
   CreateSpaceRequest,
   CreateSpaceResponse,
   DeleteSpaceRequest,
+  GetSpaceRequest,
+  GetSpaceResponse,
   ListSpaceApiKeysRequest,
   ListSpaceApiKeysResponse,
   ListSpacesRequest,
@@ -82,6 +84,29 @@ export class SpacesService {
       cursor,
       limit,
     });
+  }
+
+  @Transactional<TransactionalAdapterDrizzleORM>({ accessMode: "read only" })
+  async getSpace(request: GetSpaceRequest): Promise<GetSpaceResponse> {
+    const { spaceId, userId } = request;
+
+    const [space, spaceMember] = await Promise.all([
+      this.spaceRepository.findSpaceById(spaceId),
+      this.spaceMemberRepository.findSpaceMemberBySpaceIdAndMemberId(
+        spaceId,
+        userId,
+      ),
+    ]);
+
+    if (!space) {
+      throw new SpaceNotFoundException(spaceId);
+    }
+
+    if (!spaceMember) {
+      throw new UnauthorizedSpaceAccessException(spaceId);
+    }
+
+    return space;
   }
 
   @Transactional()

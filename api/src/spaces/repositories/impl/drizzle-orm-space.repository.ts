@@ -10,6 +10,7 @@ import {
   CreateSpaceData,
   ListSpacesQuery,
   PaginatedSpacesWithLastPingAtAndUnreadCount,
+  SpaceInfo,
 } from "../../types/spaces.types";
 
 @Injectable()
@@ -53,6 +54,32 @@ export class DrizzleORMSpaceRepository implements SpaceRepository {
       .returning({ spaceId: spaces.id });
 
     return spaceId;
+  }
+
+  async findSpaceById(spaceId: string): Promise<SpaceInfo | null> {
+    const [space] = await this.txHost.tx
+      .select({
+        id: spaces.id,
+        name: spaces.name,
+        shortDescription: spaces.shortDescription,
+        description: spaces.description,
+        memberCount: count(spaceMembers.id).as("member_count"),
+      })
+      .from(spaces)
+      .leftJoin(spaceMembers, eq(spaceMembers.spaceId, spaces.id))
+      .where(eq(spaces.id, spaceId))
+      .groupBy(spaces.id)
+      .limit(1);
+
+    if (!space) return null;
+
+    return {
+      id: space.id,
+      name: space.name,
+      shortDescription: space.shortDescription,
+      description: space.description,
+      memberCount: Number(space.memberCount),
+    };
   }
 
   async listSpaces({

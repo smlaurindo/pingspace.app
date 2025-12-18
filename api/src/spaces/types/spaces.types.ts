@@ -89,3 +89,11 @@ export type PaginatedSpacesWithLastPingAtAndUnreadCount = {
     limit: number;
   };
 };
+
+export type SpaceInfo = {
+  id: string;
+  name: string;
+  shortDescription: string;
+  description: string | null;
+  memberCount: number;
+};

@@ -2,6 +2,7 @@ import {
   CreateSpaceData,
   ListSpacesQuery,
   PaginatedSpacesWithLastPingAtAndUnreadCount,
+  SpaceInfo,
 } from "../types/spaces.types";
 
 export abstract class SpaceRepository {
@@ -25,6 +26,13 @@ export abstract class SpaceRepository {
    * @returns The created space ID
    */
   abstract createSpace(data: CreateSpaceData): Promise<string>;
+
+  /**
+   * Find a space by ID
+   * @param spaceId - The space identifier
+   * @returns The space data
+   */
+  abstract findSpaceById(spaceId: string): Promise<SpaceInfo | null>;
 
   /**
    * List spaces for a member with pagination
